@@ -42,10 +42,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         headless: true,
       }
     : {
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
+        args: (chromium as any).args,
+        defaultViewport: (chromium as any).defaultViewport,
+        executablePath: await (chromium as any).executablePath(),
+        headless: (chromium as any).headless,
       };
 
   // Fallback for local development dynamically searching for default paths
