@@ -51,18 +51,34 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   // Fallback for local development dynamically searching for default paths
   let browser;
   try {
-    browser = await puppeteer.launch(options as any);
-  } catch (error) {
+    // 1. Define common candidate paths for local development across different OS distributions
+    const candidatePaths = [
+      "/usr/bin/google-chrome",
+      "/usr/bin/google-chrome-stable",
+      "/usr/bin/chromium",
+      "/usr/bin/chromium-browser",
+      "/snap/bin/chromium", // Ubuntu snap store location
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", // MacOS
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", // Windows
+    ];
+
+    // 2. Determine best local path
+    let localPath = undefined;
     if (isDev) {
-      console.warn("Default launch failed, trying local chrome path...");
-      browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        executablePath: "/usr/bin/google-chrome", // Standard Linux path
-        headless: true,
-      } as any);
-    } else {
-      throw error;
+      const fs = await import("fs");
+      localPath = candidatePaths.find(path => fs.existsSync(path));
     }
+
+    const runtimeOptions = isDev ? {
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      executablePath: localPath,
+      headless: true,
+    } : options;
+
+    browser = await puppeteer.launch(runtimeOptions as any);
+  } catch (error) {
+    console.error("Failed to launch browser in PDF route:", error);
+    throw error;
   }
   
   return await generatePdf(browser);

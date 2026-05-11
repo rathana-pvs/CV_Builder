@@ -25,6 +25,7 @@ export function TextTab({
     <div className="animate-in fade-in duration-300 flex flex-col gap-4">
       {/* Dynamic Accordion Stack */}
       <DndContext
+        id="text-tab-dnd-context"
         sensors={sectionSensors}
         collisionDetection={closestCenter}
         onDragEnd={handleSectionDragEnd}

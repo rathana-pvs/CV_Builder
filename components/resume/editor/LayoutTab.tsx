@@ -25,6 +25,7 @@ export function LayoutTab({
         <Typography.Text className="text-xs text-blue-700/80">Reorder elements visually. Drag each card from the left handle to rearrange your CV order.</Typography.Text>
       </div>
       <DndContext
+        id="layout-tab-dnd-context"
         sensors={sectionSensors}
         collisionDetection={closestCenter}
         onDragEnd={handleSectionDragEnd}
