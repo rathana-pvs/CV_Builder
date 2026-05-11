@@ -1,3 +1,6 @@
 {
-  "/page": "app/page.js"
+  "/api/resumes/[id]/route": "app/api/resumes/[id]/route.js",
+  "/api/resumes/[id]/export/pdf/route": "app/api/resumes/[id]/export/pdf/route.js",
+  "/page": "app/page.js",
+  "/resumes/[id]/page": "app/resumes/[id]/page.js"
 }

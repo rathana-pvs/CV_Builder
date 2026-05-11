@@ -6,13 +6,18 @@ import { renderResumeHtml } from "@/lib/resume-html";
 import type { ResumeData, TemplateId } from "@/lib/resume-types";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id } = await params;
-  const resume = await prisma.resume.findFirst({ where: { id, userId } });
+  // Find the resume first
+  const resume = await prisma.resume.findUnique({ where: { id } });
   if (!resume) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // If it belongs to someone, you must be them to export it.
+  if (resume.userId && resume.userId !== userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const { searchParams } = new URL(request.url);
   const queryTemplate = searchParams.get("template") as TemplateId | null;

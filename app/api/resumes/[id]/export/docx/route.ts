@@ -36,13 +36,18 @@ function documentXml(data: ResumeData) {
 }
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id } = await params;
-  const resume = await prisma.resume.findFirst({ where: { id, userId } });
+  // Find the resume
+  const resume = await prisma.resume.findUnique({ where: { id } });
   if (!resume) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Access logic matching standard GET/PATCH endpoints
+  if (resume.userId && resume.userId !== userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const PizZip = (await import("pizzip")).default;
   const Docxtemplater = (await import("docxtemplater")).default;

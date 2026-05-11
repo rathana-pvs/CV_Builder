@@ -1,4 +1,4 @@
-// File: /home/rathana/WebstormProjects/CV_Online/app/layout.tsx
+// File: /home/rathana/Desktop/CV_Builder/app/layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
