@@ -28,27 +28,60 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const activeAccent = queryAccent || undefined;
   const finalFilename = queryFilename ? `${queryFilename}.pdf` : `${resume.slug}.pdf`;
 
-  const puppeteer = await import("puppeteer");
-  const browser = await puppeteer.default.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
-  const page = await browser.newPage();
-  await page.setContent(renderResumeHtml(resume.dataJson as ResumeData, activeTemplate, activeAccent), {
-    waitUntil: "networkidle0",
-  });
-  const pdf = await page.pdf({
-    format: "A4",
-    printBackground: true,
-    margin: { top: 0, right: 0, bottom: 0, left: 0 },
-  });
-  await browser.close();
-  const body = Uint8Array.from(pdf).buffer;
+  const isDev = process.env.NODE_ENV === "development";
 
-  return new Response(body, {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${encodeURIComponent(finalFilename)}"`,
-    },
-  });
+  // Dynamic loading to keep serverless initialization light
+  const puppeteer = await import("puppeteer-core");
+  const chromium = (await import("@sparticuz/chromium")).default;
+
+  // Setup launch options based on environment
+  const options = isDev
+    ? {
+        args: [],
+        executablePath: "/usr/bin/google-chrome", // Or leave undefined if local dev has it globally
+        headless: true,
+      }
+    : {
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      };
+
+  // Fallback for local development dynamically searching for default paths
+  if (isDev) {
+     // In dev, simply use regular 'puppeteer' if installed or search local paths
+     const localPuppeteer = await import("puppeteer").catch(() => null);
+     if (localPuppeteer) {
+        const browser = await localPuppeteer.default.launch({
+           headless: true,
+           args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        });
+        return await generatePdf(browser);
+     }
+  }
+
+  const browser = await puppeteer.launch(options as any);
+  return await generatePdf(browser);
+
+  async function generatePdf(browser: any) {
+    const page = await browser.newPage();
+    await page.setContent(renderResumeHtml(resume!.dataJson as ResumeData, activeTemplate, activeAccent), {
+      waitUntil: "networkidle0",
+    });
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+    });
+    await browser.close();
+    const body = Uint8Array.from(pdf).buffer;
+
+    return new Response(body, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${encodeURIComponent(finalFilename)}"`,
+      },
+    });
+  }
 }
