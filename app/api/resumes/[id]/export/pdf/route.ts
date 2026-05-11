@@ -49,19 +49,22 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       };
 
   // Fallback for local development dynamically searching for default paths
-  if (isDev) {
-     // In dev, simply use regular 'puppeteer' if installed or search local paths
-     const localPuppeteer = await import("puppeteer").catch(() => null);
-     if (localPuppeteer) {
-        const browser = await localPuppeteer.default.launch({
-           headless: true,
-           args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        });
-        return await generatePdf(browser);
-     }
+  let browser;
+  try {
+    browser = await puppeteer.launch(options as any);
+  } catch (error) {
+    if (isDev) {
+      console.warn("Default launch failed, trying local chrome path...");
+      browser = await puppeteer.launch({
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        executablePath: "/usr/bin/google-chrome", // Standard Linux path
+        headless: true,
+      } as any);
+    } else {
+      throw error;
+    }
   }
-
-  const browser = await puppeteer.launch(options as any);
+  
   return await generatePdf(browser);
 
   async function generatePdf(browser: any) {
