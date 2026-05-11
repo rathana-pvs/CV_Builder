@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --resume-accent: #2563eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f3f5f8;
+  color: #162033;
+}
+
+.resume-page {
+  width: min(100%, 900px);
+  min-height: 1120px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.template-sea {
+  --resume-accent: #0f766e;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+
+  .resume-page {
+    width: 100%;
+    min-height: 0;
+    box-shadow: none;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
