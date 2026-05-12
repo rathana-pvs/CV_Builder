@@ -1,9 +1,18 @@
+import type { Metadata } from "next";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
 import type { ResumeRecord } from "@/lib/resume-types";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function DashboardPage() {
   const userId = await requireUserId();
