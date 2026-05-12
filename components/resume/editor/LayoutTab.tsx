@@ -19,10 +19,12 @@ export function LayoutTab({
   sectionConfigs,
 }: LayoutTabProps) {
   return (
-    <div className="animate-in fade-in duration-300">
-      <div className="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100/50">
-        <Typography.Text className="font-extrabold text-blue-900 block mb-1">Organize Layout</Typography.Text>
-        <Typography.Text className="text-xs text-blue-700/80">Reorder elements visually. Drag each card from the left handle to rearrange your CV order.</Typography.Text>
+    <div className="animate-in fade-in w-full duration-300">
+      <div className="mb-5 rounded-xl border border-slate-200 bg-white p-5">
+        <Typography.Text className="mb-1 block text-sm font-semibold text-slate-900">Section Order</Typography.Text>
+        <Typography.Text className="text-xs text-slate-500">
+          Drag sections to control how the document reads from top to bottom.
+        </Typography.Text>
       </div>
       <DndContext
         id="layout-tab-dnd-context"

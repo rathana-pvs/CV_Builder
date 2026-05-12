@@ -1,24 +1,8 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { uniqueResumeSlug } from "@/lib/slug";
-
-async function getResumeWithAccess(id: string) {
-  const session = await getServerSession(authOptions);
-  const currentUserId = session?.user?.id;
-  
-  const resume = await prisma.resume.findUnique({ where: { id } });
-  if (!resume) return null;
-  
-  // If it has no owner, anyone with the ID can access it (guest flow).
-  if (!resume.userId) return resume;
-  
-  // If it has an owner, check match
-  if (currentUserId === resume.userId) return resume;
-
-  return null;
-}
+import { getResumeWithAccess } from "@/lib/resume-access";
+import { isTemplateId } from "@/lib/resume-types";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -33,6 +17,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!resume) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const body = await request.json();
+  const nextTemplate = body.template;
+  if (nextTemplate !== undefined && !isTemplateId(nextTemplate)) {
+    return NextResponse.json({ error: "Invalid template" }, { status: 400 });
+  }
   const slug = await uniqueResumeSlug(String(body.slug || body.title || resume.title), id);
 
   const updated = await prisma.resume.update({
@@ -40,7 +28,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     data: {
       title: String(body.title || resume.title),
       slug,
-      template: String(body.template || resume.template),
+      template: nextTemplate || resume.template,
       dataJson: body.dataJson || resume.dataJson,
       isPublic: Boolean(body.isPublic),
     },

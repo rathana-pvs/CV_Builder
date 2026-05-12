@@ -11,20 +11,25 @@ interface PreviewPanelProps {
 
 export function PreviewPanel({ previewData, template }: PreviewPanelProps) {
   return (
-    <div className="bg-slate-100 overflow-y-auto no-scrollbar h-full p-8 flex items-start justify-center max-xl:h-auto">
-      <div className="flex flex-col items-center gap-5 w-full max-w-[850px] pb-12">
-        <div className="flex items-center justify-between w-full px-2 text-slate-500">
-          <Typography.Text
-            type="secondary"
-            className="font-bold text-[10px] uppercase tracking-wider flex items-center gap-2"
-          >
-            <EyeOutlined className="text-slate-400" /> Live Editor Preview
-          </Typography.Text>
-          <span className="text-[10px] font-extrabold px-3 py-1 bg-white border border-slate-200 shadow-sm rounded-full text-slate-500 tracking-wider">
-            A4 Format (100%)
+    <div className="h-full overflow-y-auto bg-slate-100/80 p-5 md:p-7 max-xl:h-auto">
+      <div className="mx-auto flex w-full max-w-[880px] flex-col gap-4 pb-10">
+        <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white/90 px-4 py-3 text-slate-500 backdrop-blur">
+          <div className="min-w-0">
+            <Typography.Text
+              type="secondary"
+              className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
+            >
+              <EyeOutlined className="text-slate-400" /> Preview
+            </Typography.Text>
+            <Typography.Text className="mt-1 block text-[12px] text-slate-600">
+              Live A4 document rendering
+            </Typography.Text>
+          </div>
+          <span className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+            100%
           </span>
         </div>
-        <div className="w-full shadow-2xl shadow-slate-400/20 rounded-2xl overflow-hidden bg-white ring-[12px] ring-slate-200/30 max-w-[794px] transition-all duration-500">
+        <div className="w-full max-w-[794px] self-center overflow-hidden rounded-lg border border-slate-300/80 bg-white shadow-[0_24px_50px_rgba(15,23,42,0.08)] transition-all duration-500">
           <ResumeTemplate data={previewData} template={template} />
         </div>
       </div>

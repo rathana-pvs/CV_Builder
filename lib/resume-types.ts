@@ -1,4 +1,10 @@
-export type TemplateId = "modern" | "minimal" | "corporate" | "sea" | "creative";
+export const TEMPLATE_IDS = ["modern", "minimal", "corporate", "sea", "creative"] as const;
+
+export type TemplateId = (typeof TEMPLATE_IDS)[number];
+
+export function isTemplateId(value: unknown): value is TemplateId {
+  return typeof value === "string" && TEMPLATE_IDS.includes(value as TemplateId);
+}
 
 export type ResumeData = {
   personal: {

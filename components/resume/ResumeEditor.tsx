@@ -154,6 +154,12 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
   }, [form, resume, setData, setMeta]);
 
   const previewData = useMemo(() => data, [data]);
+  const saveBadgeLabel = saving ? "Saving..." : isDirty ? "Unsaved Changes" : "Saved";
+  const saveBadgeClassName = saving
+    ? "bg-amber-50 text-amber-700"
+    : isDirty
+      ? "bg-rose-50 text-rose-700"
+      : "bg-emerald-50 text-emerald-700";
 
   function syncPreview(overrideSections?: string[]) {
     const allValues = form.getFieldsValue(true);
@@ -195,21 +201,26 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
 
   async function save() {
     setSaving(true);
-    const response = await fetch(`/api/resumes/${resume.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, slug, template, isPublic, dataJson: data }),
-    });
-    setSaving(false);
+    try {
+      const response = await fetch(`/api/resumes/${resume.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, slug, template, isPublic, dataJson: data }),
+      });
 
-    if (!response.ok) {
+      if (!response.ok) {
+        message.error("Could not save resume.");
+        return;
+      }
+
+      message.success("Resume saved successfully.");
+      setIsDirty(false);
+      router.refresh();
+    } catch {
       message.error("Could not save resume.");
-      return;
+    } finally {
+      setSaving(false);
     }
-
-    message.success("Resume saved successfully.");
-    setIsDirty(false);
-    router.refresh();
   }
 
   function handleGoHome() {
@@ -292,12 +303,11 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
 
 
   return (
-    <div className="h-screen bg-slate-50/40 flex flex-col overflow-hidden">
-      {/* Premium Top Navigation Bar */}
-      <header className="h-16 border-b border-slate-200 bg-white px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+    <div className="flex h-screen flex-col overflow-hidden bg-slate-100">
+      <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-5 md:px-6">
         <div className="flex items-center gap-4">
           <div 
-            className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xl shadow-md shadow-blue-500/20 cursor-pointer hover:scale-105 transition-all"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white text-base font-bold text-slate-900 transition-colors hover:bg-slate-50"
             onClick={handleGoHome}
             title="Back to Dashboard"
           >
@@ -309,7 +319,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
                 <Input
                   size="small"
                   autoFocus
-                  className="font-bold text-slate-800 text-[15px] h-7 w-[240px] border-blue-400 bg-white focus:ring-2 focus:ring-blue-100 shadow-sm -ml-1"
+                  className="h-7 w-[240px] -ml-1 border-slate-300 bg-white text-[15px] font-semibold text-slate-800 shadow-none"
                   value={title}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -325,38 +335,38 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
                 />
               ) : (
                 <Typography.Text 
-                  className="font-bold text-slate-800 text-[15px] cursor-pointer transition-all px-1 -ml-1 hover:bg-slate-100 rounded border border-transparent hover:border-slate-200 flex items-center"
+                  className="flex cursor-pointer items-center rounded border border-transparent px-1 text-[15px] font-semibold text-slate-800 transition-all hover:border-slate-200 hover:bg-slate-50 -ml-1"
                   onClick={() => setIsEditingTitle(true)}
                   title="Click to rename resume"
                 >
                   {title || "Untitled Resume"}
                 </Typography.Text>
               )}
-              <span className="px-2 py-0.5 bg-slate-100 text-[9px] text-slate-500 font-bold rounded-full uppercase tracking-wider">
-                Draft Saved
+              <span className={`rounded-md px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] ${saveBadgeClassName}`}>
+                {saveBadgeLabel}
               </span>
             </div>
-            <Typography.Text type="secondary" className="text-xs">
-              Live Interactive Resume Builder
+            <Typography.Text type="secondary" className="text-xs text-slate-500">
+              Resume editor
             </Typography.Text>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           <Button
             icon={<SaveOutlined />}
             type="primary"
             loading={saving}
             onClick={save}
-            className="h-10 rounded-xl px-5 font-bold text-xs bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm border-none"
+            className="h-10 rounded-md border-none bg-slate-900 px-4 text-xs font-semibold shadow-none hover:bg-slate-800"
           >
-            Save Changes
+            Save
           </Button>
           <Button
             icon={<DownloadOutlined />}
             onClick={handlePrepareDownload}
-            className="h-10 rounded-xl px-5 font-bold text-xs border-slate-200 text-slate-700 hover:text-slate-800 hover:border-slate-300 transition-all flex items-center"
+            className="flex h-10 items-center rounded-md border-slate-200 px-4 text-xs font-semibold text-slate-700 shadow-none hover:border-slate-300 hover:text-slate-900"
           >
-            Download PDF
+            Export PDF
           </Button>
           {isPublic ? (
             <Button
@@ -364,9 +374,9 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
               href={`/cv/${slug}`}
               target="_blank"
               onClick={handleShareClick}
-              className="h-10 rounded-xl px-4 font-bold text-xs text-slate-600 border-slate-200 flex items-center"
+              className="flex h-10 items-center rounded-md border-slate-200 px-4 text-xs font-semibold text-slate-600 shadow-none"
             >
-              Share Link
+              Share
             </Button>
           ) : null}
         </div>
@@ -468,7 +478,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
 
                 <Row gutter={12}>
                   {["email", "phone", "location", "website"].map((field) => (
-                    <Col span={12} key={field}>
+                    <Col xs={24} md={12} key={field}>
                       <Form.Item
                         name={field}
                         label={<span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{field}</span>}
@@ -586,7 +596,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
             icon: <SettingOutlined />,
             content: (
               <Row gutter={12}>
-                <Col span={12}>
+                <Col xs={24} md={12}>
                   <Form.Item
                     name="title"
                     label={<span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Resume Title</span>}
@@ -594,7 +604,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
                     <Input placeholder="My Resume" className="rounded-lg h-10" />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} md={12}>
                   <Form.Item
                     name="slug"
                     label={<span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Public Slug</span>}
@@ -613,38 +623,37 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
         };
 
         return (
-          <div className="flex-1 grid grid-cols-2 max-xl:grid-cols-1 gap-0 overflow-hidden h-[calc(100vh-64px)]">
-            
-            {/* Column 1: Combined Editor with Custom Tabs */}
-            <div className="bg-white flex flex-col border-r border-slate-200/60 overflow-hidden h-full">
-              
-              {/* Custom Nav Tabs mirroring image style */}
-              <div className="flex border-b border-slate-200 bg-white sticky top-0 z-10">
+          <div className="grid h-[calc(100vh-64px)] flex-1 grid-cols-[minmax(420px,560px)_1fr] overflow-hidden max-xl:grid-cols-1">
+            <div className="flex h-full flex-col overflow-hidden border-r border-slate-200 bg-slate-50/70">
+              <div className="border-b border-slate-200 bg-white px-5 py-4">
+                <div className="mb-4">
+                  <p className="m-0 text-sm font-semibold text-slate-900">Workspace</p>
+                  <p className="mt-1 text-xs text-slate-500">Edit content, change template, and control document order.</p>
+                </div>
+                <div className="grid grid-cols-3 gap-2 rounded-lg bg-slate-100 p-1">
                 {([
                   { key: 'text', label: 'Text' },
-                  { key: 'template', label: 'Template & Colors' },
+                  { key: 'template', label: 'Style' },
                   { key: 'layout', label: 'Layout' }
                 ] as const).map((tab) => (
                   <button
                     key={tab.key}
                     type="button"
                     onClick={() => setActiveTab(tab.key)}
-                    className={`flex-1 py-4 text-[11px] font-extrabold tracking-widest uppercase transition-all border-b-2 ${
+                    className={`rounded-md px-3 py-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] transition-all ${
                       activeTab === tab.key 
-                        ? 'border-blue-600 text-blue-600' 
-                        : 'border-transparent text-slate-400 hover:text-slate-600 hover:bg-slate-50/50'
+                        ? 'bg-white text-slate-900 shadow-sm' 
+                        : 'text-slate-500 hover:text-slate-700'
                     }`}
                   >
                     {tab.label}
                   </button>
                 ))}
               </div>
+              </div>
 
-              {/* Tab Container wrapped in Form */}
               <Form form={form} layout="vertical" onValuesChange={syncPreview} className="flex-1 overflow-hidden flex flex-col">
-                <div className="flex-1 overflow-y-auto no-scrollbar p-6 bg-slate-50/20">
-                  
-                  {/* TAB: Template & Colors */}
+                <div className="flex-1 overflow-y-auto p-4 md:p-5">
                   {activeTab === 'template' && (
                     <TemplateTab
                       data={data}
@@ -653,21 +662,14 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
                       syncPreview={syncPreview}
                     />
                   )}
-
-
-                  {/* TAB: Text Editor Contents */}
                   {activeTab === 'text' && (
                     <TextTab
-                      sectionSensors={sectionSensors}
-                      handleSectionDragEnd={handleSectionDragEnd}
                       sectionsOrder={sectionsOrder}
                       sectionConfigs={sectionConfigs}
                       activeSections={activeSections}
                       toggleSection={toggleSection}
                     />
                   )}
-
-                  {/* TAB: Layout Contents */}
                   {activeTab === 'layout' && (
                     <LayoutTab
                       sectionSensors={sectionSensors}
@@ -676,14 +678,11 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
                       sectionConfigs={sectionConfigs}
                     />
                   )}
-
                 </div>
               </Form>
             </div>
 
-            {/* Live Preview Panel */}
             <PreviewPanel previewData={previewData} template={template} />
-
           </div>
         );
       })()}

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import type { ResumeData } from "@/lib/resume-types";
+import { getResumeWithAccess } from "@/lib/resume-access";
 
 function documentXml(data: ResumeData) {
   const escapeXml = (value = "") =>
@@ -37,17 +35,8 @@ function documentXml(data: ResumeData) {
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-
-  // Find the resume
-  const resume = await prisma.resume.findUnique({ where: { id } });
+  const resume = await getResumeWithAccess(id);
   if (!resume) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  // Access logic matching standard GET/PATCH endpoints
-  if (resume.userId && resume.userId !== userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const PizZip = (await import("pizzip")).default;
   const Docxtemplater = (await import("docxtemplater")).default;

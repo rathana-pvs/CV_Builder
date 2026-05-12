@@ -23,6 +23,7 @@ model User {
 model Resume {
   id        String   @id @default(cuid())
   userId    String?  @map("user_id")
+  guestToken String? @map("guest_token")
   title     String
   slug      String   @unique
   template  String   @default("modern")

@@ -13,12 +13,17 @@ interface TemplateTabProps {
 
 export function TemplateTab({ data, template, form, syncPreview }: TemplateTabProps) {
   return (
-    <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div>
-        <Typography.Text className="font-bold text-sm text-slate-800 block mb-4">
-          Main Accent Color
-        </Typography.Text>
-        <div className="flex flex-wrap items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+    <div className="animate-in fade-in slide-in-from-bottom-2 flex w-full flex-col gap-6 duration-300">
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="mb-4">
+          <Typography.Text className="block text-sm font-semibold text-slate-900">
+            Accent Color
+          </Typography.Text>
+          <Typography.Text className="text-xs text-slate-500">
+            Apply a consistent color across the resume template.
+          </Typography.Text>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
           {[
             { name: "Default", hex: "" },
             { name: "Blue", hex: "#2563eb" },
@@ -38,9 +43,9 @@ export function TemplateTab({ data, template, form, syncPreview }: TemplateTabPr
                   form.setFieldsValue({ color: preset.hex });
                   syncPreview();
                 }}
-                className={`w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center cursor-pointer ${
+                className={`flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all ${
                   isPresetSelected
-                    ? "border-blue-500 scale-110 shadow-md ring-4 ring-blue-50"
+                    ? "scale-105 border-slate-900 shadow-sm ring-4 ring-slate-100"
                     : "border-transparent hover:scale-105 hover:border-slate-200"
                 }`}
                 style={{
@@ -53,7 +58,7 @@ export function TemplateTab({ data, template, form, syncPreview }: TemplateTabPr
               </button>
             );
           })}
-          <div className="h-6 w-px bg-slate-200 mx-1"></div>
+          <div className="mx-1 h-6 w-px bg-slate-200"></div>
           <input
             type="color"
             value={data.color || "#2563eb"}
@@ -61,17 +66,22 @@ export function TemplateTab({ data, template, form, syncPreview }: TemplateTabPr
               form.setFieldsValue({ color: e.target.value });
               syncPreview();
             }}
-            className="w-8 h-8 rounded-full border border-slate-200 cursor-pointer overflow-hidden p-0 bg-transparent flex-shrink-0 shadow-sm"
+            className="h-9 w-9 cursor-pointer overflow-hidden rounded-full border border-slate-200 bg-transparent p-0 shadow-sm"
             title="Custom Color"
           />
         </div>
-      </div>
+      </section>
 
-      <div>
-        <Typography.Text className="font-bold text-sm text-slate-800 block mb-4">
-          Choose Template
-        </Typography.Text>
-        <div className="grid grid-cols-2 gap-5">
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="mb-4">
+          <Typography.Text className="block text-sm font-semibold text-slate-900">
+            Template
+          </Typography.Text>
+          <Typography.Text className="text-xs text-slate-500">
+            Choose the document structure that best fits the role.
+          </Typography.Text>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
           {Object.values(TEMPLATES).map((tmpl) => {
             const isSelected = template === tmpl.id;
             return (
@@ -81,10 +91,10 @@ export function TemplateTab({ data, template, form, syncPreview }: TemplateTabPr
                   form.setFieldsValue({ template: tmpl.id });
                   syncPreview();
                 }}
-                className="group cursor-pointer flex flex-col gap-2.5 transition-all"
+                className="group flex cursor-pointer flex-col gap-2 transition-all"
               >
-                <div className={`relative aspect-[3/4.2] bg-white border-2 rounded-xl overflow-hidden transition-all duration-300 flex flex-col ${isSelected ? 'border-blue-500 ring-4 ring-blue-50 shadow-md' : 'border-slate-200 group-hover:border-slate-300 group-hover:shadow-sm'}`}>
-                  <div className="flex-1 bg-slate-50 p-3 flex flex-col gap-2 overflow-hidden">
+                <div className={`relative flex aspect-[3/4.2] flex-col overflow-hidden rounded-lg border bg-white transition-all duration-300 ${isSelected ? "border-slate-900 shadow-sm ring-2 ring-slate-200" : "border-slate-200 group-hover:border-slate-300"}`}>
+                  <div className="flex flex-1 flex-col gap-2 overflow-hidden bg-slate-50 p-3">
                     <div className="flex gap-2 items-center border-b border-slate-200/50 pb-1.5">
                       <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: isSelected ? (data.color || tmpl.accentColor) : tmpl.accentColor }} />
                       <div className="h-1.5 bg-slate-200 rounded w-2/3"></div>
@@ -102,18 +112,18 @@ export function TemplateTab({ data, template, form, syncPreview }: TemplateTabPr
                     </div>
                   </div>
                   {isSelected && (
-                    <div className="absolute inset-0 bg-blue-600/5 flex items-center justify-center">
-                      <div className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 transform scale-110 animate-in zoom-in duration-200">
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-950/5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm">
                         <CheckOutlined className="text-sm" />
                       </div>
                     </div>
                   )}
                 </div>
-                <div className="text-center px-1">
-                  <Typography.Text className={`font-extrabold text-[13px] block ${isSelected ? 'text-blue-600' : 'text-slate-700'}`}>
+                <div className="px-1">
+                  <Typography.Text className={`block text-[13px] font-semibold ${isSelected ? "text-slate-900" : "text-slate-700"}`}>
                     {tmpl.name}
                   </Typography.Text>
-                  <Typography.Text className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                  <Typography.Text className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">
                     {tmpl.id === "sea" ? "Premium Layout" : tmpl.id === "minimal" ? "Clean Minimal" : "Professional"}
                   </Typography.Text>
                 </div>
@@ -121,7 +131,7 @@ export function TemplateTab({ data, template, form, syncPreview }: TemplateTabPr
             );
           })}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

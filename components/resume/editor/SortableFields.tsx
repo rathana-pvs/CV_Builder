@@ -71,28 +71,28 @@ export function SortableFieldItem({
       <div
         {...attributes}
         {...listeners}
-        className="mt-5 opacity-30 group-hover/row:opacity-80 transition-opacity cursor-grab active:cursor-grabbing text-slate-500 flex-shrink-0"
+        className="mt-5 flex-shrink-0 cursor-grab text-slate-400 opacity-30 transition-opacity active:cursor-grabbing group-hover/row:opacity-80"
       >
         <HolderOutlined className="text-[17px]" />
       </div>
 
       <div
-        className={`flex-1 bg-white border rounded-xl transition-all duration-200 ${
+        className={`flex-1 rounded-lg border bg-white transition-all duration-200 ${
           isExpanded 
-            ? "border-blue-200 shadow-md ring-4 ring-blue-50/10" 
-            : "border-slate-200 hover:border-slate-300 shadow-sm"
+            ? "border-slate-900 shadow-sm ring-2 ring-slate-100" 
+            : "border-slate-200 hover:border-slate-300"
         }`}
       >
         <div 
-          className="flex items-center justify-between px-5 py-4 cursor-pointer select-none"
+          className="flex cursor-pointer select-none items-center justify-between px-5 py-4"
           onClick={onToggle}
         >
-          <div className="flex-1 overflow-hidden pr-4">
-            <Typography.Text className="font-extrabold text-[13.5px] text-slate-900 block truncate leading-snug">
+          <div className="min-w-0 flex-1 pr-4">
+            <Typography.Text className="block text-[13px] font-semibold leading-snug text-slate-900 break-words">
               {title || `New Entry`}
             </Typography.Text>
             {subtitle && (
-              <Typography.Text className="text-[11px] text-slate-500 mt-0.5 block truncate font-medium">
+              <Typography.Text className="mt-0.5 block text-[11px] font-medium text-slate-500 break-words">
                 {subtitle}
               </Typography.Text>
             )}
@@ -118,10 +118,10 @@ export function SortableFieldItem({
         </div>
 
         {isExpanded && (
-          <div className="px-5 pb-5 pt-2 border-t border-slate-100 bg-slate-50/10 rounded-b-xl">
+          <div className="rounded-b-lg border-t border-slate-100 bg-slate-50/40 px-5 pb-5 pt-3">
             <Row gutter={[12, 12]}>
               {fields.map((field) => (
-                <Col span={field === "description" ? 24 : 12} key={field}>
+                <Col xs={24} md={field === "description" ? 24 : 12} key={field}>
                   {(() => {
                     const isDateField = field.toLowerCase().includes("date");
                     
@@ -149,7 +149,7 @@ export function SortableFieldItem({
                           <AutoComplete
                             placeholder="Enter degree..."
                             className="w-full rounded-lg"
-                            popupClassName="rounded-xl"
+                            classNames={{ popup: { root: "rounded-xl" } }}
                             options={[
                               { value: "Bachelor of Science" },
                               { value: "Bachelor of Arts" },
@@ -196,6 +196,7 @@ interface SortableSectionCardProps {
   children: React.ReactNode;
   isOpen: boolean;
   onToggle: () => void;
+  sortable?: boolean;
 }
 
 export function SortableSectionCard({
@@ -205,7 +206,8 @@ export function SortableSectionCard({
   icon,
   children,
   isOpen,
-  onToggle
+  onToggle,
+  sortable = true,
 }: SortableSectionCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
@@ -218,40 +220,46 @@ export function SortableSectionCard({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-start gap-3 group/section mb-1">
-      <div
-        {...attributes}
-        {...listeners}
-        className="mt-4 opacity-20 group-hover/section:opacity-80 transition-opacity cursor-grab active:cursor-grabbing text-slate-400 flex-shrink-0"
-      >
-        <HolderOutlined className="text-[20px]" />
-      </div>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group/section mb-1 flex items-start ${sortable ? "gap-3" : ""}`}
+    >
+      {sortable ? (
+        <div
+          {...attributes}
+          {...listeners}
+          className="mt-4 flex-shrink-0 cursor-grab text-slate-400 opacity-20 transition-opacity active:cursor-grabbing group-hover/section:opacity-80"
+        >
+          <HolderOutlined className="text-[20px]" />
+        </div>
+      ) : null}
 
       <Card
-        className={`flex-1 border transition-all duration-300 rounded-2xl overflow-hidden ${
+        className={`flex-1 overflow-hidden rounded-xl border transition-all duration-300 ${
           isOpen
-            ? "shadow-md border-blue-200 ring-4 ring-blue-50/20"
-            : "shadow-sm border-slate-100 hover:border-slate-300 bg-white"
+            ? "border-slate-900 shadow-sm ring-2 ring-slate-100"
+            : "border-slate-200 bg-white hover:border-slate-300"
         }`}
         styles={{ body: { padding: 0 } }}
       >
         <div
           onClick={onToggle}
-          className="flex items-start justify-between px-6 py-4 cursor-pointer select-none bg-white"
+          className="flex cursor-pointer select-none items-start justify-between bg-white px-4 py-4"
         >
           <div className="flex flex-col gap-1 pr-4 flex-1">
              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm transition-colors ${
-                  isOpen ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"
+                <div className={`flex h-8 w-8 items-center justify-center rounded-md border text-sm transition-colors ${
+                  isOpen ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-slate-50 text-slate-500"
                 }`}>
                   {icon}
                 </div>
-                <Typography.Text className="font-extrabold text-slate-900 text-[16px] tracking-tight">
+                <Typography.Text className="text-[15px] font-semibold tracking-tight text-slate-900">
                   {title}
                 </Typography.Text>
              </div>
              {description && (
-               <Typography.Text className="text-[12px] text-slate-500 mt-1 leading-relaxed ml-11">
+               <Typography.Text className="ml-11 mt-1 text-[12px] leading-relaxed text-slate-500">
                  {description}
                </Typography.Text>
              )}
@@ -264,7 +272,7 @@ export function SortableSectionCard({
         </div>
 
         {isOpen && (
-          <div className="px-6 pb-6 pt-2 border-t border-slate-50 bg-white animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="animate-in fade-in slide-in-from-top-1 border-t border-slate-100 bg-white px-4 pb-5 pt-3 duration-200">
             {children}
           </div>
         )}
@@ -290,15 +298,15 @@ export function SortableLayoutItem({ id, title, icon }: SortableLayoutItemProps)
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-4 p-4 mb-3 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-blue-300 group transition-all">
-      <div {...attributes} {...listeners} className="opacity-40 group-hover:opacity-100 cursor-grab active:cursor-grabbing text-slate-400 transition-opacity">
+    <div ref={setNodeRef} style={style} className="group mb-3 flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4 transition-all hover:border-slate-300">
+      <div {...attributes} {...listeners} className="cursor-grab text-slate-400 opacity-40 transition-opacity active:cursor-grabbing group-hover:opacity-100">
         <HolderOutlined className="text-lg" />
       </div>
-      <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600">
+      <div className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-slate-600">
         {icon}
       </div>
       <div className="flex-1">
-        <Typography.Text className="font-bold text-[15px] text-slate-800">{title}</Typography.Text>
+        <Typography.Text className="text-[14px] font-medium text-slate-800">{title}</Typography.Text>
       </div>
       <div className="text-slate-300 flex flex-col items-center">
         <CaretUpOutlined className="text-[10px]" />

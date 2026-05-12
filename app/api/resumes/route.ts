@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { randomUUID } from "crypto";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sampleResumeData } from "@/lib/sample-resume";
 import { uniqueResumeSlug, uniqueResumeTitle } from "@/lib/slug";
+import { guestResumeCookieName } from "@/lib/resume-access";
+import { isTemplateId } from "@/lib/resume-types";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -21,20 +24,22 @@ export async function GET() {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
-  
+
   let chosenTemplate = "modern";
   try {
     const body = await req.json();
-    if (body.template) chosenTemplate = body.template;
-  } catch (e) {
+    if (isTemplateId(body.template)) chosenTemplate = body.template;
+  } catch {
     // ignore body parsing errors
   }
 
   const title = await uniqueResumeTitle(userId);
   const slug = await uniqueResumeSlug(title);
+  const guestToken = userId ? null : randomUUID();
   const resume = await prisma.resume.create({
     data: {
       ...(userId ? { userId } : {}),
+      ...(guestToken ? { guestToken } : {}),
       title,
       slug,
       template: chosenTemplate,
@@ -43,5 +48,16 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json(resume, { status: 201 });
+  const response = NextResponse.json(resume, { status: 201 });
+  if (guestToken) {
+    response.cookies.set(guestResumeCookieName(resume.id), guestToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  }
+
+  return response;
 }

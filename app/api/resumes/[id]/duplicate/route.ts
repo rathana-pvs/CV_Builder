@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { uniqueResumeSlug, uniqueResumeTitle } from "@/lib/slug";
+import { isTemplateId } from "@/lib/resume-types";
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -13,6 +14,9 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   const { id } = await params;
   const source = await prisma.resume.findFirst({ where: { id, userId } });
   if (!source) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!isTemplateId(source.template)) {
+    return NextResponse.json({ error: "Invalid source template" }, { status: 400 });
+  }
 
   const title = await uniqueResumeTitle(userId, `${source.title} Copy`);
   const slug = await uniqueResumeSlug(title);
