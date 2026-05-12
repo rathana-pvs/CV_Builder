@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { authOptions } from "@/lib/auth";
+import { BrandLogo } from "@/components/brand/LogoMark";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -30,10 +31,11 @@ export default async function LoginPage() {
           
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-12">
-              <div className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-500/20">
-                CV
-              </div>
-              <span className="font-black text-xl tracking-tight">CV Online</span>
+              <BrandLogo
+                dark
+                markClassName="h-10 w-10 drop-shadow-lg"
+                title="ResumeDot"
+              />
             </div>
             
             <h1 className="text-4xl font-extrabold leading-tight tracking-tight mb-6 text-white">

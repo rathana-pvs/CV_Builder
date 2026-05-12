@@ -19,7 +19,7 @@ function getCvDescription(data: ResumeData) {
   if (headline) return `${headline}. View the public CV.`;
   if (data.summary) return data.summary.slice(0, 155);
 
-  return "View this professional CV built with CV Online.";
+  return "View this professional CV built with ResumeDot.";
 }
 
 export async function generateMetadata({ params }: PublicCvPageProps): Promise<Metadata> {

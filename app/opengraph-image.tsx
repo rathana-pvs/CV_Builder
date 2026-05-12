@@ -31,16 +31,38 @@ export default function OpenGraphImage() {
                 alignItems: "center",
                 background: "#0f172a",
                 borderRadius: 16,
-                color: "#ffffff",
                 display: "flex",
-                fontSize: 30,
-                fontWeight: 900,
                 height: 72,
                 justifyContent: "center",
+                position: "relative",
                 width: 72,
               }}
             >
-              CV
+              <div
+                style={{
+                  background: "#1e293b",
+                  border: "4px solid #ffffff",
+                  height: 42,
+                  left: 22,
+                  position: "absolute",
+                  top: 15,
+                  width: 31,
+                }}
+              />
+              <div
+                style={{
+                  borderBottom: "4px solid #ffffff",
+                  borderLeft: "4px solid #ffffff",
+                  height: 12,
+                  left: 41,
+                  position: "absolute",
+                  top: 16,
+                  width: 12,
+                }}
+              />
+              <div style={{ background: "#38bdf8", borderRadius: 999, height: 8, left: 29, position: "absolute", top: 38, width: 18 }} />
+              <div style={{ background: "#ffffff", borderRadius: 999, height: 8, left: 29, position: "absolute", top: 48, width: 13 }} />
+              <div style={{ background: "#38bdf8", borderRadius: 999, height: 8, left: 22, position: "absolute", top: 24, width: 8 }} />
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ fontSize: 32, fontWeight: 900 }}>{siteName}</div>

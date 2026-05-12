@@ -1,4 +1,4 @@
-export const siteName = "CV Online";
+export const siteName = "ResumeDot";
 export const siteDomain = "resumedot.site";
 export const productionSiteUrl = `https://${siteDomain}`;
 

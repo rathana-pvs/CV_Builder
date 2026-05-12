@@ -17,6 +17,7 @@ import {
 import { TEMPLATES } from "@/components/resume/TemplateRegistry";
 import type { TemplateId } from "@/lib/resume-types";
 import { LinkedInImportModal } from "@/components/import/LinkedInImportModal";
+import { BrandLogo } from "@/components/brand/LogoMark";
 
 const templateDescriptions: Record<TemplateId, string> = {
   modern: "Balanced spacing and strong section hierarchy for most applications.",
@@ -97,13 +98,11 @@ export function LandingClient() {
             disabled={Boolean(loadingTemplate)}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-950 text-sm font-black text-white shadow-sm">
-              CV
-            </div>
-            <div>
-              <span className="block text-sm font-black tracking-tight text-slate-950">CV Builder</span>
-              <span className="hidden text-xs font-medium text-slate-500 sm:block">Professional resume studio</span>
-            </div>
+            <BrandLogo
+              markClassName="h-9 w-9 drop-shadow-sm"
+              subtitle="Professional resume studio"
+              title="ResumeDot"
+            />
           </button>
           <div className="flex items-center gap-2">
             <Button

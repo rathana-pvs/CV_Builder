@@ -20,6 +20,7 @@ import { signOut } from "next-auth/react";
 import type { ResumeRecord } from "@/lib/resume-types";
 import { TEMPLATES } from "../resume/TemplateRegistry";
 import { LinkedInImportModal } from "@/components/import/LinkedInImportModal";
+import { BrandLogo } from "@/components/brand/LogoMark";
 
 const { Title, Text } = Typography;
 
@@ -73,8 +74,10 @@ export function DashboardClient({ resumes }: Props) {
       <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-100 shadow-sm mb-10">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-500/20">CV</div>
-            <span className="font-bold text-lg tracking-tight text-slate-800">CV Online</span>
+            <BrandLogo
+              markClassName="h-8 w-8 drop-shadow-sm"
+              title="ResumeDot"
+            />
           </div>
           
           <div className="flex items-center gap-4">
