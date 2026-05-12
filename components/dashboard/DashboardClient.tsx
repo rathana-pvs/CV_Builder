@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button, Card, Empty, Space, Tag, Typography, message, Dropdown, MenuProps } from "antd";
 import { 
   CopyOutlined, 
@@ -11,12 +12,14 @@ import {
   EyeOutlined, 
   GlobalOutlined, 
   LockOutlined, 
-  CalendarOutlined 
+  CalendarOutlined,
+  LinkedinFilled,
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import type { ResumeRecord } from "@/lib/resume-types";
 import { TEMPLATES } from "../resume/TemplateRegistry";
+import { LinkedInImportModal } from "@/components/import/LinkedInImportModal";
 
 const { Title, Text } = Typography;
 
@@ -26,6 +29,7 @@ type Props = {
 
 export function DashboardClient({ resumes }: Props) {
   const router = useRouter();
+  const [importOpen, setImportOpen] = useState(false);
 
   async function createResume() {
     const response = await fetch("/api/resumes", { method: "POST" });
@@ -64,6 +68,7 @@ export function DashboardClient({ resumes }: Props) {
 
   return (
     <div className="min-h-screen bg-[#fafafa] pb-20">
+      <LinkedInImportModal open={importOpen} onClose={() => setImportOpen(false)} />
       {/* Custom Premium Header Bar */}
       <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-100 shadow-sm mb-10">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -103,15 +108,25 @@ export function DashboardClient({ resumes }: Props) {
             </p>
           </div>
 
-          <Button 
-            type="primary" 
-            size="large"
-            icon={<FileAddOutlined />} 
-            onClick={createResume}
-            className="h-12 px-6 rounded-xl font-bold text-sm shadow-lg shadow-blue-600/20 bg-blue-600 hover:bg-blue-700 border-none flex items-center gap-2"
-          >
-            Create New Resume
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              size="large"
+              icon={<LinkedinFilled />}
+              onClick={() => setImportOpen(true)}
+              className="h-12 rounded-xl border-slate-200 px-5 font-bold text-sm text-slate-700 shadow-none"
+            >
+              Import LinkedIn
+            </Button>
+            <Button 
+              type="primary" 
+              size="large"
+              icon={<FileAddOutlined />} 
+              onClick={createResume}
+              className="h-12 px-6 rounded-xl font-bold text-sm shadow-lg shadow-blue-600/20 bg-blue-600 hover:bg-blue-700 border-none flex items-center gap-2"
+            >
+              Create New Resume
+            </Button>
+          </div>
         </div>
 
         {/* Resumes Dashboard Content */}
@@ -124,14 +139,24 @@ export function DashboardClient({ resumes }: Props) {
             <p className="text-slate-500 mb-8 max-w-sm font-medium text-sm">
               You haven't created any resumes yet. Kickstart your career search by building your first professional CV now.
             </p>
-            <Button 
-              type="primary" 
-              size="large" 
-              onClick={createResume}
-              className="bg-slate-900 hover:bg-slate-800 font-bold rounded-xl h-12 px-8 border-none"
-            >
-              Start Building
-            </Button>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                size="large"
+                icon={<LinkedinFilled />}
+                onClick={() => setImportOpen(true)}
+                className="h-12 rounded-xl border-slate-200 px-6 font-bold"
+              >
+                Import LinkedIn
+              </Button>
+              <Button 
+                type="primary" 
+                size="large" 
+                onClick={createResume}
+                className="bg-slate-900 hover:bg-slate-800 font-bold rounded-xl h-12 px-8 border-none"
+              >
+                Start Building
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-500 slide-in-from-bottom-4">

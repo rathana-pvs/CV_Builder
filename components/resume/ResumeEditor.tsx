@@ -792,83 +792,97 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
         </div>
       </Modal>
 
-      {/* Premium Leaving Confirmation Modal */}
+      {/* Leaving Confirmation Modal */}
       <Modal
         title={
-          <div className="flex items-center gap-2 pb-2">
-            <div className="w-8 h-8 bg-red-50 text-red-500 rounded-lg flex items-center justify-center">
-              <WarningOutlined className="text-base" />
+          <div className="flex items-start gap-3 pr-6">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-200 bg-amber-50 text-amber-600">
+              <WarningOutlined className="text-lg" />
             </div>
-            <span className="font-extrabold tracking-tight text-slate-800 text-[16px]">
-              {isLoggedIn ? "Unsaved Changes" : "Wait, Don't Go!"}
-            </span>
+            <div className="min-w-0">
+              <span className="block text-[17px] font-extrabold leading-6 tracking-tight text-slate-900">
+                {isLoggedIn ? "Leave without saving?" : "Save this resume before leaving?"}
+              </span>
+              <span className="mt-1 block text-[13px] font-medium leading-5 text-slate-500">
+                {isLoggedIn
+                  ? "Your latest edits are only on this screen."
+                  : "Guest resumes are not kept after you leave this editor."}
+              </span>
+            </div>
           </div>
         }
         open={leaveConfirmOpen}
         onCancel={() => setLeaveConfirmOpen(false)}
         centered
-        width={440}
-        footer={null} // Custom tailored footer inline below for extreme aesthetic precision
+        width={460}
+        footer={null}
+        className="[&_.ant-modal-content]:!rounded-2xl [&_.ant-modal-content]:!p-0 [&_.ant-modal-close]:!top-4 [&_.ant-modal-close]:!right-4 [&_.ant-modal-header]:!mb-0 [&_.ant-modal-header]:!rounded-t-2xl [&_.ant-modal-header]:!border-b [&_.ant-modal-header]:!border-slate-100 [&_.ant-modal-header]:!px-6 [&_.ant-modal-header]:!py-5 [&_.ant-modal-body]:!px-6 [&_.ant-modal-body]:!py-5"
       >
-        <div className="py-2">
-          <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-6">
-            <Typography.Paragraph className="!m-0 font-medium text-[13.5px] text-slate-600 leading-relaxed">
+        <div className="space-y-5">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <Typography.Paragraph className="!mb-0 text-[13.5px] font-medium leading-6 text-slate-600">
               {isLoggedIn 
-                ? "You have edits that haven't been saved yet. If you leave now, your most recent changes will be discarded forever."
-                : "Leaving now means this resume profile will NOT be saved securely. To prevent starting from scratch later, we strongly recommend linking this work to a secure account."
+                ? "If you leave now, the unsaved changes in this editing session will be discarded. Stay here to keep working, or leave and return to your dashboard."
+                : "Create a free account to keep this resume and continue editing it later. You can still leave now and go back to the home page."
               }
             </Typography.Paragraph>
           </div>
 
-          <div className="grid gap-3">
-            {/* Action A: Primary Suggested Route */}
+          <div className="grid gap-2 rounded-xl border border-slate-100 bg-white p-3 shadow-sm shadow-slate-200/60">
+            <div className="flex items-center justify-between gap-3 rounded-lg bg-blue-50 px-3 py-2">
+              <div className="text-[12px] font-bold uppercase tracking-wide text-blue-700">
+                Recommended
+              </div>
+              <div className="text-right text-[12px] font-semibold text-blue-700">
+                {isLoggedIn ? "Keep your edits" : "Save for later"}
+              </div>
+            </div>
+
             {!isLoggedIn ? (
               <Button 
                 type="primary"
                 icon={<LoginOutlined />}
-                className="h-12 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-sm shadow-lg shadow-blue-600/20 border-none flex items-center justify-center gap-2"
+                className="flex h-12 items-center justify-center gap-2 rounded-xl border-none bg-blue-600 text-sm font-bold shadow-lg shadow-blue-600/20 hover:!bg-blue-700"
                 onClick={() => {
                   setLeaveConfirmOpen(false);
                   router.push(`/login?callbackUrl=${encodeURIComponent(window.location.href)}`);
                 }}
               >
-                Save Instantly via Free Account
+                Save with Free Account
               </Button>
             ) : (
               <Button 
                 type="primary"
-                className="h-12 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-sm shadow-md border-none"
+                className="h-12 rounded-xl border-none bg-blue-600 text-sm font-bold shadow-lg shadow-blue-600/20 hover:!bg-blue-700"
                 onClick={() => setLeaveConfirmOpen(false)}
               >
-                Stay Here and Keep Editing
+                Stay and Keep Editing
               </Button>
             )}
+          </div>
 
-            {/* Action B: Safe Fallback */}
-            <div className="flex gap-3">
-              {!isLoggedIn ? (
-                <Button 
-                  className="h-11 rounded-xl font-bold text-[13px] text-slate-700 border-slate-200 flex-1"
-                  onClick={() => setLeaveConfirmOpen(false)}
-                >
-                  Stay & Edit
-                </Button>
-              ) : null}
-              
-              {/* Action C: Destructive but clean Exit */}
-              <Button 
-                danger
-                type="text"
-                icon={<ArrowLeftOutlined />}
-                className={`h-11 rounded-xl font-bold text-[12px] ${!isLoggedIn ? 'flex-1 hover:bg-red-50' : 'w-full mt-1 hover:bg-red-50'}`}
-                onClick={() => {
-                  setLeaveConfirmOpen(false);
-                  router.push(isLoggedIn ? "/dashboard" : "/");
-                }}
+          <div className="flex flex-col-reverse gap-3 sm:flex-row">
+            <Button
+              danger
+              type="text"
+              icon={<ArrowLeftOutlined />}
+              className="h-11 flex-1 rounded-xl text-[13px] font-bold hover:!bg-red-50"
+              onClick={() => {
+                setLeaveConfirmOpen(false);
+                router.push(isLoggedIn ? "/dashboard" : "/");
+              }}
+            >
+              Discard and Leave
+            </Button>
+
+            {!isLoggedIn ? (
+              <Button
+                className="h-11 flex-1 rounded-xl border-slate-200 text-[13px] font-bold text-slate-700 hover:!border-blue-300 hover:!text-blue-700"
+                onClick={() => setLeaveConfirmOpen(false)}
               >
-                Discard & Leave
+                Stay and Edit
               </Button>
-            </div>
+            ) : null}
           </div>
         </div>
       </Modal>

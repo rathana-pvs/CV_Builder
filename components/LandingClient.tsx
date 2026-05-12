@@ -2,24 +2,46 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Row, Col, Typography, message } from "antd";
+import { Button, Card, message, Spin } from "antd";
 import { 
   RightOutlined, 
   FileDoneOutlined, 
   LayoutOutlined, 
   HighlightOutlined, 
-  CheckCircleFilled 
+  CheckCircleFilled,
+  LoadingOutlined,
+  LinkedinFilled,
+  ArrowRightOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { TEMPLATES } from "@/components/resume/TemplateRegistry";
 import type { TemplateId } from "@/lib/resume-types";
+import { LinkedInImportModal } from "@/components/import/LinkedInImportModal";
 
-const { Title, Text, Paragraph } = Typography;
+const templateDescriptions: Record<TemplateId, string> = {
+  modern: "Balanced spacing and strong section hierarchy for most applications.",
+  minimal: "Quiet typography with generous whitespace for focused reading.",
+  corporate: "Formal structure tuned for management and business roles.",
+  sea: "A refined two-column layout with regional profile emphasis.",
+  creative: "A timeline-led layout for portfolio and creative positions.",
+};
+
+const templateBadges: Record<TemplateId, string> = {
+  modern: "Popular",
+  minimal: "Clean",
+  corporate: "Formal",
+  sea: "SEA",
+  creative: "Portfolio",
+};
 
 export function LandingClient() {
   const router = useRouter();
   const [loadingTemplate, setLoadingTemplate] = useState<TemplateId | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const activeTemplate = loadingTemplate ? TEMPLATES[loadingTemplate] : null;
 
   const handleSelectTemplate = async (templateId: TemplateId) => {
+    if (loadingTemplate) return;
     setLoadingTemplate(templateId);
     try {
       const res = await fetch("/api/resumes", {
@@ -39,176 +61,339 @@ export function LandingClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 flex flex-col">
-      {/* Navbar */}
-      <nav className="flex justify-between items-center px-8 py-4 bg-white/70 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">CV</div>
-          <span className="text-lg font-bold tracking-tight text-slate-800">CV Builder</span>
+    <div className="min-h-screen bg-[#f6f8fb] text-slate-950">
+      <LinkedInImportModal open={importOpen} onClose={() => setImportOpen(false)} />
+      {activeTemplate ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/88 backdrop-blur-sm">
+          <div className="mx-6 w-full max-w-md rounded-lg border border-slate-200 bg-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.14)]">
+            <div className="mb-5 flex items-center gap-3">
+              <div
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-white"
+                style={{ backgroundColor: activeTemplate.accentColor }}
+              >
+                <LayoutOutlined className="text-lg" />
+              </div>
+              <div>
+                <p className="m-0 text-sm font-semibold text-slate-900">Preparing your resume</p>
+                <p className="m-0 mt-1 text-xs text-slate-500">{activeTemplate.name} template</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+              <Spin indicator={<LoadingOutlined spin className="text-slate-700" />} />
+              <div>
+                <p className="m-0 text-sm font-medium text-slate-800">Creating workspace</p>
+                <p className="m-0 mt-1 text-xs text-slate-500">This can take a moment on first load.</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <Button 
-            type="link" 
-            className="font-bold text-slate-600"
-            onClick={() => router.push("/login")}
+      ) : null}
+
+      <nav className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur-md">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <button
+            type="button"
+            className="flex items-center gap-3 text-left"
+            disabled={Boolean(loadingTemplate)}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            Sign In
-          </Button>
-          <Button 
-            type="primary" 
-            className="bg-blue-600 hover:bg-blue-700 font-bold rounded-lg shadow-md shadow-blue-600/20 ml-2"
-            onClick={() => router.push("/login")}
-          >
-            Get Started
-          </Button>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-950 text-sm font-black text-white shadow-sm">
+              CV
+            </div>
+            <div>
+              <span className="block text-sm font-black tracking-tight text-slate-950">CV Builder</span>
+              <span className="hidden text-xs font-medium text-slate-500 sm:block">Professional resume studio</span>
+            </div>
+          </button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="text"
+              className="font-semibold text-slate-600"
+              disabled={Boolean(loadingTemplate)}
+              onClick={() => router.push("/login")}
+            >
+              Sign in
+            </Button>
+            <Button
+              type="primary"
+              className="rounded-lg border-none bg-slate-950 px-4 font-bold shadow-sm hover:!bg-slate-800"
+              disabled={Boolean(loadingTemplate)}
+              onClick={() => router.push("/login")}
+            >
+              Dashboard
+            </Button>
+          </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-16 md:py-24 flex flex-col items-center">
-        <div className="text-center max-w-3xl mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold uppercase tracking-wider mb-6">
-            🚀 Fast & Intuitive Resume Generator
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900 leading-tight mb-6">
-            Build your dream career with <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-              stunning professional CVs
-            </span>
-          </h1>
-          <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto mb-10">
-            Create a professional, job-winning resume in minutes. Choose from our expertly crafted templates and start applying today – <span className="text-slate-800 font-semibold">no account required to start!</span>
-          </p>
-        </div>
+      <main>
+        <section className="border-b border-slate-200 bg-white">
+          <div className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-7xl items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8 lg:py-14">
+            <div className="max-w-2xl">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-emerald-700">
+                <SafetyCertificateOutlined />
+                Start as a guest
+              </div>
+              <h1 className="m-0 text-4xl font-black leading-[1.02] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+                Build a polished CV before the next application closes.
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+                Pick a professional layout, import from LinkedIn, and edit with a live preview designed for quick, focused resume work.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<ArrowRightOutlined />}
+                  iconPosition="end"
+                  disabled={Boolean(loadingTemplate)}
+                  onClick={() => document.getElementById("templates")?.scrollIntoView({ behavior: "smooth" })}
+                  className="h-12 rounded-lg border-none bg-blue-600 px-6 font-bold shadow-[0_12px_30px_rgba(37,99,235,0.24)] hover:!bg-blue-700"
+                >
+                  Choose a template
+                </Button>
+                <Button
+                  size="large"
+                  icon={<LinkedinFilled />}
+                  disabled={Boolean(loadingTemplate)}
+                  onClick={() => setImportOpen(true)}
+                  className="h-12 rounded-lg border-slate-300 px-5 font-bold text-slate-700 shadow-none"
+                >
+                  Import from LinkedIn
+                </Button>
+              </div>
+              <div className="mt-8 grid max-w-xl grid-cols-3 divide-x divide-slate-200 rounded-lg border border-slate-200 bg-slate-50">
+                <div className="px-4 py-3">
+                  <p className="m-0 text-lg font-black text-slate-950">5</p>
+                  <p className="m-0 text-xs font-medium text-slate-500">Templates</p>
+                </div>
+                <div className="px-4 py-3">
+                  <p className="m-0 text-lg font-black text-slate-950">PDF</p>
+                  <p className="m-0 text-xs font-medium text-slate-500">Export ready</p>
+                </div>
+                <div className="px-4 py-3">
+                  <p className="m-0 text-lg font-black text-slate-950">Live</p>
+                  <p className="m-0 text-xs font-medium text-slate-500">Preview</p>
+                </div>
+              </div>
+            </div>
 
-        {/* Template Showcase Grid */}
-        <div className="w-full max-w-5xl">
-          <div className="flex items-center gap-2 mb-8">
-            <LayoutOutlined className="text-blue-600 text-xl" />
-            <h2 className="text-2xl font-extrabold text-slate-800 m-0">Select a Base Template</h2>
+            <div className="relative min-h-[520px] overflow-hidden rounded-lg border border-slate-200 bg-slate-100 p-4 shadow-[0_24px_80px_rgba(15,23,42,0.13)] sm:p-6">
+              <div className="absolute left-6 top-6 z-10 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-lg">
+                <p className="m-0 text-xs font-bold uppercase tracking-wide text-slate-400">Status</p>
+                <p className="m-0 mt-1 text-sm font-black text-slate-900">Ready to export</p>
+              </div>
+              <div className="absolute bottom-6 right-6 z-10 hidden w-52 rounded-lg border border-slate-200 bg-white p-4 shadow-lg sm:block">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Sections</span>
+                  <CheckCircleFilled className="text-emerald-500" />
+                </div>
+                <div className="space-y-2">
+                  {["Profile", "Experience", "Skills", "Education"].map((item) => (
+                    <div key={item} className="flex items-center justify-between text-xs font-semibold text-slate-600">
+                      <span>{item}</span>
+                      <span className="h-1.5 w-10 rounded-full bg-emerald-400" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mx-auto mt-8 w-full max-w-[440px] rounded-lg bg-white p-7 shadow-2xl ring-1 ring-slate-200 sm:mt-4">
+                <div className="mb-6 flex items-start justify-between border-b border-slate-200 pb-5">
+                  <div>
+                    <div className="mb-2 h-3 w-24 rounded bg-blue-600" />
+                    <div className="h-7 w-56 rounded bg-slate-900" />
+                    <div className="mt-3 h-2 w-44 rounded bg-slate-200" />
+                  </div>
+                  <div className="h-16 w-16 rounded-lg bg-slate-200" />
+                </div>
+                <div className="grid grid-cols-[0.62fr_0.38fr] gap-6">
+                  <div className="space-y-5">
+                    {[0, 1, 2].map((item) => (
+                      <div key={item}>
+                        <div className="mb-3 h-2.5 w-24 rounded bg-slate-800" />
+                        <div className="space-y-2">
+                          <div className="h-2 rounded bg-slate-200" />
+                          <div className="h-2 rounded bg-slate-200" />
+                          <div className="h-2 w-3/4 rounded bg-slate-200" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-4 rounded-lg bg-slate-50 p-4">
+                    <div>
+                      <div className="mb-3 h-2.5 w-16 rounded bg-teal-600" />
+                      <div className="space-y-2">
+                        <div className="h-2 rounded bg-slate-200" />
+                        <div className="h-2 w-5/6 rounded bg-slate-200" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="mb-3 h-2.5 w-20 rounded bg-amber-500" />
+                      <div className="flex flex-wrap gap-2">
+                        {[0, 1, 2, 3].map((item) => (
+                          <span key={item} className="h-5 w-14 rounded bg-white ring-1 ring-slate-200" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="templates" className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-blue-600">
+                <LayoutOutlined />
+                Template library
+              </div>
+              <h2 className="m-0 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Choose a starting point</h2>
+              <p className="m-0 mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                Each template opens directly into the editor with live preview, layout controls, and export tools.
+              </p>
+            </div>
+            <Button
+              icon={<LinkedinFilled />}
+              disabled={Boolean(loadingTemplate)}
+              onClick={() => setImportOpen(true)}
+              className="h-10 rounded-lg border-slate-300 font-bold text-slate-700"
+            >
+              Import first
+            </Button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {Object.values(TEMPLATES).map((template) => (
               <Card
                 hoverable
                 key={template.id}
-                className="overflow-hidden border-slate-200/60 transition-all duration-300 hover:shadow-xl group rounded-2xl flex flex-col h-full bg-white"
+                className="group flex h-full flex-col overflow-hidden rounded-lg border-slate-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                 styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', flexGrow: 1 } }}
               >
-                {/* Placeholder "Fake Document Preview" using CSS */}
-                <div className="h-56 bg-slate-50 p-6 relative group overflow-hidden border-b border-slate-100">
-                  <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition-all duration-300 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100">
+                <div className="relative h-60 overflow-hidden border-b border-slate-100 bg-slate-100 p-5">
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/0 opacity-0 transition-all duration-300 group-hover:bg-slate-950/45 group-hover:opacity-100">
                     <Button 
                       type="primary" 
                       size="large"
                       loading={loadingTemplate === template.id}
-                      className="font-bold text-sm shadow-lg h-12 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 border-none"
+                      disabled={Boolean(loadingTemplate)}
+                      className="h-11 translate-y-3 rounded-lg border-none bg-blue-600 px-6 text-sm font-bold shadow-lg transition-all duration-300 hover:bg-blue-700 group-hover:translate-y-0"
                       icon={<RightOutlined />}
                       onClick={() => handleSelectTemplate(template.id)}
                     >
-                      Use this Template
+                      Use template
                     </Button>
                   </div>
                   
-                  {/* Fake doc design that changes by template */}
-                  <div className="w-full h-full bg-white rounded-lg shadow-sm border border-slate-200 flex flex-col p-4 transform group-hover:scale-[1.02] transition-transform duration-500">
-                    <div className={`h-4 rounded w-3/4 mb-3`} style={{ backgroundColor: template.accentColor }}></div>
-                    <div className="h-2 bg-slate-100 rounded w-1/2 mb-4"></div>
+                  <div className="flex h-full w-full flex-col rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-transform duration-500 group-hover:scale-[1.02]">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-2 h-3 w-3/4 rounded" style={{ backgroundColor: template.accentColor }} />
+                        <div className="h-2 w-1/2 rounded bg-slate-100" />
+                      </div>
+                      <div className="rounded bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-500 ring-1 ring-slate-200">
+                        {templateBadges[template.id]}
+                      </div>
+                    </div>
                     
                     {template.id === 'creative' ? (
-                      <div className="flex gap-3 flex-1">
-                        <div className="w-1/3 flex flex-col gap-2">
-                          <div className="h-2 bg-slate-100 rounded w-full"></div>
-                          <div className="h-2 bg-slate-100 rounded w-5/6"></div>
+                      <div className="flex flex-1 gap-3">
+                        <div className="flex w-1/3 flex-col gap-2 border-r border-slate-100 pr-3">
+                          <div className="h-2 w-full rounded bg-slate-100" />
+                          <div className="h-2 w-5/6 rounded bg-slate-100" />
+                          <div className="mt-2 h-16 rounded bg-slate-50" />
                         </div>
-                        <div className="flex-1 flex flex-col gap-2">
-                          <div className="h-20 bg-slate-50 rounded w-full border border-dashed border-slate-200"></div>
+                        <div className="flex flex-1 flex-col gap-2">
+                          <div className="h-20 w-full rounded border border-dashed border-slate-200 bg-slate-50" />
+                          <div className="h-2 w-4/5 rounded bg-slate-100" />
                         </div>
                       </div>
                     ) : template.id === 'sea' ? (
-                      <div className="flex gap-3 flex-1 flex-row-reverse">
-                        <div className="w-1/3 bg-slate-50 rounded p-2 flex flex-col gap-2">
-                          <div className="w-8 h-8 rounded-full bg-slate-200 mx-auto"></div>
-                          <div className="h-1 bg-slate-200 rounded w-full"></div>
+                      <div className="flex flex-1 flex-row-reverse gap-3">
+                        <div className="flex w-1/3 flex-col gap-2 rounded bg-teal-50 p-2">
+                          <div className="mx-auto h-8 w-8 rounded-full bg-teal-200" />
+                          <div className="h-1 w-full rounded bg-teal-200" />
+                          <div className="h-1 w-5/6 rounded bg-teal-200" />
                         </div>
-                        <div className="flex-1 flex flex-col gap-2">
-                           <div className="h-2 bg-slate-100 rounded w-full"></div>
-                           <div className="h-2 bg-slate-100 rounded w-full"></div>
-                           <div className="h-2 bg-slate-100 rounded w-3/4"></div>
+                        <div className="flex flex-1 flex-col gap-2">
+                           <div className="h-2 w-full rounded bg-slate-100" />
+                           <div className="h-2 w-full rounded bg-slate-100" />
+                           <div className="h-2 w-3/4 rounded bg-slate-100" />
+                           <div className="mt-2 h-10 rounded border border-dashed border-slate-200 bg-white" />
                         </div>
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <div className="h-2 bg-slate-100 rounded w-full"></div>
-                        <div className="h-2 bg-slate-100 rounded w-full"></div>
-                        <div className="h-2 bg-slate-100 rounded w-2/3"></div>
-                        <div className="flex gap-2 mt-2">
-                          <div className="h-12 flex-1 bg-slate-50 border border-dashed border-slate-200 rounded"></div>
-                          <div className="h-12 flex-1 bg-slate-50 border border-dashed border-slate-200 rounded"></div>
+                        <div className="h-2 w-full rounded bg-slate-100" />
+                        <div className="h-2 w-full rounded bg-slate-100" />
+                        <div className="h-2 w-2/3 rounded bg-slate-100" />
+                        <div className="mt-2 flex gap-2">
+                          <div className="h-12 flex-1 rounded border border-dashed border-slate-200 bg-slate-50" />
+                          <div className="h-12 flex-1 rounded border border-dashed border-slate-200 bg-slate-50" />
                         </div>
                       </div>
                     )}
                   </div>
                 </div>
                 
-                <div className="p-5 flex flex-col justify-between flex-1">
+                <div className="flex flex-1 flex-col justify-between p-5">
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Text className="text-lg font-bold text-slate-800">{template.name}</Text>
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: template.accentColor }}></div>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <h3 className="m-0 text-lg font-black text-slate-900">{template.name}</h3>
+                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: template.accentColor }} />
                     </div>
-                    <Text type="secondary" className="text-xs block mb-4">
-                      Professional layout optimized for {template.id === 'corporate' ? 'corporate roles' : template.id === 'creative' ? 'design agencies' : 'modern recruitment'}.
-                    </Text>
+                    <p className="mb-5 mt-0 text-sm leading-6 text-slate-600">{templateDescriptions[template.id]}</p>
                   </div>
                   <Button 
                     block
-                    className="md:hidden font-bold text-blue-600 border-blue-100 bg-blue-50/50"
+                    className="h-10 rounded-lg border-blue-100 bg-blue-50/70 font-bold text-blue-700 md:hidden"
                     loading={loadingTemplate === template.id}
+                    disabled={Boolean(loadingTemplate)}
                     onClick={() => handleSelectTemplate(template.id)}
                   >
-                    Choose Template
+                    Choose template
                   </Button>
                 </div>
               </Card>
             ))}
           </div>
-        </div>
-      </main>
+        </section>
 
-      {/* Feature bar */}
-      <footer className="bg-slate-900 text-white py-16 border-t border-slate-800">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="flex gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center shrink-0">
-              <HighlightOutlined className="text-blue-400 text-xl" />
+        <section className="border-y border-slate-200 bg-white">
+          <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-0 px-4 py-8 sm:px-6 md:grid-cols-3 lg:px-8">
+            <div className="flex gap-4 border-b border-slate-200 py-6 md:border-b-0 md:border-r md:pr-8">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+                <HighlightOutlined className="text-lg text-blue-600" />
+              </div>
+              <div>
+                <h4 className="m-0 text-base font-black text-slate-950">Real-time preview</h4>
+                <p className="m-0 mt-2 text-sm leading-6 text-slate-600">See content and spacing update instantly as your CV takes shape.</p>
+              </div>
             </div>
-            <div>
-              <h4 className="text-lg font-bold mb-1">Real-time Preview</h4>
-              <p className="text-slate-400 text-sm">See updates instantly as you type. No need to refresh or generate.</p>
+            <div className="flex gap-4 border-b border-slate-200 py-6 md:border-b-0 md:border-r md:px-8">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-50">
+                <FileDoneOutlined className="text-lg text-amber-600" />
+              </div>
+              <div>
+                <h4 className="m-0 text-base font-black text-slate-950">PDF export</h4>
+                <p className="m-0 mt-2 text-sm leading-6 text-slate-600">Download a clean, submission-ready PDF from the editor.</p>
+              </div>
+            </div>
+            <div className="flex gap-4 py-6 md:pl-8">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-teal-50">
+                <CheckCircleFilled className="text-lg text-teal-600" />
+              </div>
+              <div>
+                <h4 className="m-0 text-base font-black text-slate-950">Guest workflow</h4>
+                <p className="m-0 mt-2 text-sm leading-6 text-slate-600">Start immediately and move into an account only when needed.</p>
+              </div>
             </div>
           </div>
-          <div className="flex gap-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0">
-              <FileDoneOutlined className="text-indigo-400 text-xl" />
-            </div>
-            <div>
-              <h4 className="text-lg font-bold mb-1">Premium PDF Export</h4>
-              <p className="text-slate-400 text-sm">High quality vector-based PDF downloads ready for submission.</p>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center shrink-0">
-              <CheckCircleFilled className="text-teal-400 text-xl" />
-            </div>
-            <div>
-              <h4 className="text-lg font-bold mb-1">No Login Required</h4>
-              <p className="text-slate-400 text-sm">Jump straight into building. Save or export immediately as a guest.</p>
-            </div>
-          </div>
-        </div>
-      </footer>
+        </section>
+      </main>
     </div>
   );
 }
