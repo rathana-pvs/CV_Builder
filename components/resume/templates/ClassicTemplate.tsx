@@ -60,11 +60,11 @@ export function ClassicTemplate({ data }: Props) {
   const { personal, summary, experience, education, skills, languages, projects, certifications } = data;
 
   const contacts = [
-    personal.phone && { label: "Phone", value: personal.phone, icon: "☎" },
-    personal.email && { label: "Email", value: personal.email, icon: "✉" },
-    personal.location && { label: "Location", value: personal.location, icon: "📍" },
-    personal.website && { label: "Web", value: personal.website, icon: "🔗" },
-  ].filter((item): item is { label: string; value: string; icon: string } => !!item?.value);
+    personal.phone ? { label: "Phone", value: personal.phone, icon: "☎" } : null,
+    personal.email ? { label: "Email", value: personal.email, icon: "✉" } : null,
+    personal.location ? { label: "Location", value: personal.location, icon: "📍" } : null,
+    personal.website ? { label: "Web", value: personal.website, icon: "🔗" } : null,
+  ].filter((item): item is { label: string; value: string; icon: string } => !!item);
 
   const sectionsOrder = data.sectionsOrder || [
     "personal",
