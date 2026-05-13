@@ -124,7 +124,15 @@ export function TemplateTab({ data, template, form, syncPreview }: TemplateTabPr
                     {tmpl.name}
                   </Typography.Text>
                   <Typography.Text className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">
-                    {tmpl.id === "sea" ? "Premium Layout" : tmpl.id === "minimal" ? "Clean Minimal" : "Professional"}
+                    {tmpl.id === "sea"
+                      ? "Premium Layout"
+                      : tmpl.id === "minimal"
+                      ? "Clean Minimal"
+                      : tmpl.id === "classic"
+                      ? "Classic Profile"
+                      : tmpl.id === "executive"
+                      ? "Executive Blue"
+                      : "Professional"}
                   </Typography.Text>
                 </div>
               </div>

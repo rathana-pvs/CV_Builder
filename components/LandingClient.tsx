@@ -25,6 +25,8 @@ const templateDescriptions: Record<TemplateId, string> = {
   corporate: "Formal structure tuned for management and business roles.",
   sea: "A refined two-column layout with regional profile emphasis.",
   creative: "A timeline-led layout for portfolio and creative positions.",
+  classic: "A polished A4 profile layout based on the uploaded reference design.",
+  executive: "A navy two-column profile with sidebar details and timeline sections.",
 };
 
 const templateBadges: Record<TemplateId, string> = {
@@ -33,6 +35,8 @@ const templateBadges: Record<TemplateId, string> = {
   corporate: "Formal",
   sea: "SEA",
   creative: "Portfolio",
+  classic: "New",
+  executive: "Blue",
 };
 
 export function LandingClient() {

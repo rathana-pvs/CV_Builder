@@ -5,6 +5,8 @@ import { MinimalTemplate } from "./templates/MinimalTemplate";
 import { CorporateTemplate } from "./templates/CorporateTemplate";
 import { SeaTemplate } from "./templates/SeaTemplate";
 import { CreativeTemplate } from "./templates/CreativeTemplate";
+import { ClassicTemplate } from "./templates/ClassicTemplate";
+import { ExecutiveTemplate } from "./templates/ExecutiveTemplate";
 
 export type TemplateMetadata = {
   id: TemplateId;
@@ -43,5 +45,17 @@ export const TEMPLATES: Record<TemplateId, TemplateMetadata> = {
     name: "Creative Timeline",
     component: CreativeTemplate,
     accentColor: "#1e293b",
+  },
+  classic: {
+    id: "classic",
+    name: "Classic Profile",
+    component: ClassicTemplate,
+    accentColor: "#17201f",
+  },
+  executive: {
+    id: "executive",
+    name: "Executive Blue",
+    component: ExecutiveTemplate,
+    accentColor: "#27456d",
   },
 };

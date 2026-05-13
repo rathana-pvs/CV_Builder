@@ -958,11 +958,296 @@ function renderCreative(data: ResumeData, accent: string) {
   `;
 }
 
+function renderClassic(data: ResumeData) {
+  const contactItem = (label: string, value?: string) => value ? `
+    <div style="display:flex;align-items:center;gap:10px;min-width:0">
+      <span style="width:22px;height:22px;border-radius:999px;background:#17201f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0">${label}</span>
+      <span style="font-size:13px;font-weight:500;color:#17201f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(value)}</span>
+    </div>
+  ` : "";
+
+  const ruleTitle = (title: string) => `
+    <div style="margin-bottom:14px">
+      <h3 style="margin:0;font-size:20px;font-weight:900;letter-spacing:0.04em;text-transform:uppercase;color:#17201f">${title}</h3>
+      <div style="margin-top:10px;height:1.5px;width:100%;background:#17201f"></div>
+    </div>
+  `;
+
+  const timelineItem = ({
+    date,
+    source,
+    title,
+    description,
+  }: {
+    date: string;
+    source: string;
+    title: string;
+    description?: string;
+  }) => `
+    <div style="display:grid;grid-template-columns:175px 1fr;gap:26px">
+      <div>
+        ${date ? `<p style="margin:0;font-size:15px;font-weight:500;color:#17201f">${escapeHtml(date)}</p>` : ""}
+        ${source ? `<p style="margin:8px 0 0;font-size:14px;font-weight:500;color:#17201f">${escapeHtml(source)}</p>` : ""}
+      </div>
+      <div>
+        <h4 style="margin:0;font-size:15px;font-weight:900;color:#17201f">${escapeHtml(title)}</h4>
+        ${description ? `<div style="margin-top:6px;font-size:11.5px;line-height:1.55;color:#2f3634">${renderDescriptionList(description)}</div>` : ""}
+      </div>
+    </div>
+  `;
+
+  const avatarHtml = data.personal.image
+    ? `<img src="${data.personal.image}" alt="Profile" style="width:100%;height:100%;object-fit:cover" />`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#e7eeec;color:#17201f;font-size:42px;font-weight:900">${escapeHtml((data.personal.name || "?")[0]?.toUpperCase())}</div>`;
+
+  const summaryHtml = data.summary ? `
+    <section style="margin-bottom:28px">
+      ${ruleTitle("About Me")}
+      <p style="margin:0;font-size:12.8px;line-height:1.6;letter-spacing:0.01em;color:#2f3634">${escapeHtml(data.summary)}</p>
+    </section>
+  ` : "";
+
+  const educationHtml = data.education.length ? `
+    <section style="margin-bottom:28px">
+      ${ruleTitle("Education")}
+      <div style="display:grid;gap:20px">
+        ${data.education.map((item) => timelineItem({
+          date: [item.startDate, item.endDate].filter(Boolean).join(" - "),
+          source: item.school,
+          title: item.degree || "Degree",
+          description: item.description,
+        })).join("")}
+      </div>
+    </section>
+  ` : "";
+
+  const experienceHtml = data.experience.length ? `
+    <section style="margin-bottom:28px">
+      ${ruleTitle("Experience")}
+      <div style="display:grid;gap:20px">
+        ${data.experience.map((item) => timelineItem({
+          date: [item.startDate, item.endDate].filter(Boolean).join(" - "),
+          source: item.company,
+          title: item.role || "Role",
+          description: item.description,
+        })).join("")}
+      </div>
+    </section>
+  ` : "";
+
+  const skills = [...data.skills, ...data.languages];
+  const skillsHtml = skills.length ? `
+    <section style="margin-bottom:28px">
+      ${ruleTitle("Skills")}
+      <ul style="margin:0;padding-left:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px 32px;font-size:13px;font-weight:500;color:#17201f">
+        ${skills.map((item) => `<li style="padding-right:8px;break-inside:avoid">${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    </section>
+  ` : "";
+
+  const additionalItems = [
+    ...data.projects.map((item) => `
+      <div>
+        <h4 style="margin:0;font-size:14px;font-weight:900;color:#17201f">${escapeHtml(item.name)}</h4>
+        ${item.link ? `<p style="margin:3px 0 0;font-size:10.5px;font-weight:700;color:#5b6461">${escapeHtml(item.link)}</p>` : ""}
+        ${item.description ? `<p style="margin:6px 0 0;font-size:11.5px;line-height:1.5;color:#2f3634">${escapeHtml(item.description)}</p>` : ""}
+      </div>
+    `),
+    ...data.certifications.map((item) => `
+      <div>
+        <h4 style="margin:0;font-size:14px;font-weight:900;color:#17201f">${escapeHtml(item.name)}</h4>
+        <p style="margin:3px 0 0;font-size:11.5px;color:#2f3634">${[item.issuer, item.date].filter(Boolean).map(escapeHtml).join(" - ")}</p>
+      </div>
+    `),
+  ];
+
+  const additionalHtml = additionalItems.length ? `
+    <section>
+      ${ruleTitle("Additional")}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 34px">
+        ${additionalItems.join("")}
+      </div>
+    </section>
+  ` : "";
+
+  return `
+    <div style="min-height:1123px;background:#fbfbf8;color:#17201f;padding:54px 58px;font-family:Inter,sans-serif;box-sizing:border-box">
+      <header style="display:grid;grid-template-columns:162px 1fr;gap:36px;align-items:center;margin-bottom:40px">
+        <div style="width:162px;height:162px;overflow:hidden;background:#f1f5f9">${avatarHtml}</div>
+        <div style="min-width:0">
+          <h1 style="margin:0;font-size:42px;font-weight:900;letter-spacing:0.08em;line-height:0.98;text-transform:uppercase;color:#17201f;word-break:break-word">${escapeHtml(data.personal.name || "Your Name")}</h1>
+          <p style="margin:14px 0 0;font-size:23px;font-weight:300;letter-spacing:0.04em;color:#17201f">${escapeHtml(data.personal.headline || "Professional Title")}</p>
+          <div style="margin-top:28px;border-top:1.5px solid #17201f;border-bottom:1.5px solid #17201f;padding:13px 0">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+              ${contactItem("P", data.personal.phone)}
+              ${contactItem("E", data.personal.email)}
+              ${contactItem("W", data.personal.website)}
+            </div>
+          </div>
+          ${data.personal.location ? `<p style="margin:9px 0 0;font-size:11px;font-weight:500;color:#5b6461">${escapeHtml(data.personal.location)}</p>` : ""}
+        </div>
+      </header>
+
+      ${summaryHtml}
+      ${educationHtml}
+      ${experienceHtml}
+      ${skillsHtml}
+      ${additionalHtml}
+    </div>
+  `;
+}
+
+function renderExecutive(data: ResumeData) {
+  const navy = "#27456d";
+  const contacts = [
+    { label: "Phone", value: data.personal.phone },
+    { label: "Email", value: data.personal.email },
+    { label: "Address", value: data.personal.location },
+    { label: "Website", value: data.personal.website },
+  ].filter((item) => item.value);
+
+  const heading = (title: string) => `
+    <h3 style="margin:0 0 22px;font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:0.22em;color:${navy}">${title}</h3>
+  `;
+
+  const timelineItem = ({
+    title,
+    subtitle,
+    date,
+    description,
+  }: {
+    title: string;
+    subtitle?: string;
+    date?: string;
+    description?: string;
+  }) => `
+    <div style="position:relative;display:grid;grid-template-columns:1fr auto;gap:16px;padding-left:30px;padding-bottom:26px;break-inside:avoid">
+      <span style="position:absolute;left:0;top:4px;width:11px;height:11px;border-radius:999px;background:${navy}"></span>
+      <span style="position:absolute;left:5px;top:18px;width:1px;height:calc(100% - 14px);background:${navy}"></span>
+      <div>
+        <h4 style="margin:0;font-size:15px;font-weight:600;color:${navy}">${escapeHtml(title)}</h4>
+        ${subtitle ? `<p style="margin:6px 0 0;font-size:14.5px;font-weight:500;color:${navy}">${escapeHtml(subtitle)}</p>` : ""}
+        ${description ? `<div style="margin-top:10px;font-size:11.5px;line-height:1.55;color:${navy}">${renderDescriptionList(description)}</div>` : ""}
+      </div>
+      ${date ? `<p style="margin:0;padding-top:2px;white-space:nowrap;font-size:11.5px;font-weight:700;text-transform:uppercase;color:${navy}">${escapeHtml(date)}</p>` : ""}
+    </div>
+  `;
+
+  const avatarHtml = data.personal.image
+    ? `<img src="${data.personal.image}" alt="Profile" style="width:100%;height:100%;object-fit:cover" />`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#eef3f7;color:${navy};font-size:44px;font-weight:900">${escapeHtml((data.personal.name || "?")[0]?.toUpperCase())}</div>`;
+
+  const contactHtml = contacts.length ? `
+    <section style="margin-bottom:38px">
+      ${heading("Contact")}
+      <div style="display:grid;gap:22px">
+        ${contacts.map((item) => `
+          <div>
+            <p style="margin:0;font-size:14px;font-weight:700;color:${navy}">${escapeHtml(item.label)}</p>
+            <p style="margin:8px 0 0;font-size:11.8px;line-height:1.55;color:${navy};word-break:break-word">${escapeHtml(item.value || "")}</p>
+          </div>
+        `).join("")}
+      </div>
+    </section>
+  ` : "";
+
+  const educationHtml = data.education.length ? `
+    <section style="margin-bottom:38px">
+      ${heading("Education")}
+      <div style="display:grid;gap:24px">
+        ${data.education.map((item) => `
+          <div style="break-inside:avoid">
+            <p style="margin:0;font-size:14px;font-weight:700;letter-spacing:0.12em;color:${navy}">${escapeHtml([item.startDate, item.endDate].filter(Boolean).join(" - "))}</p>
+            <p style="margin:10px 0 0;font-size:14px;font-weight:500;color:${navy}">${escapeHtml(item.school)}</p>
+            <p style="margin:8px 0 0;padding-left:18px;font-size:14px;line-height:1.5;color:${navy}">• ${escapeHtml(item.degree)}</p>
+          </div>
+        `).join("")}
+      </div>
+    </section>
+  ` : "";
+
+  const skills = [...data.skills, ...data.languages];
+  const skillsHtml = skills.length ? `
+    <section>
+      ${heading("Skills")}
+      <ul style="margin:0;padding-left:22px;display:grid;gap:10px;font-size:14px;line-height:1.25;color:${navy}">
+        ${skills.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    </section>
+  ` : "";
+
+  const additionalItems = [
+    ...data.certifications.map((item) => ({
+      title: item.name,
+      subtitle: item.issuer,
+      date: item.date,
+      description: "",
+    })),
+    ...data.projects.map((item) => ({
+      title: item.name,
+      subtitle: item.link,
+      date: "",
+      description: item.description,
+    })),
+  ];
+
+  const experienceHtml = data.experience.length ? `
+    <section style="margin-bottom:38px">
+      ${heading("Work Experience")}
+      ${data.experience.map((item) => timelineItem({
+        title: item.company || "Company",
+        subtitle: item.role,
+        date: [item.startDate, item.endDate].filter(Boolean).join(" - "),
+        description: item.description,
+      })).join("")}
+    </section>
+  ` : "";
+
+  const additionalHtml = additionalItems.length ? `
+    <section style="margin-bottom:38px">
+      ${heading("Awards")}
+      ${additionalItems.map((item) => timelineItem(item)).join("")}
+    </section>
+  ` : "";
+
+  return `
+    <div style="min-height:1123px;background:#fff;color:${navy};padding:68px 48px;box-sizing:border-box;font-family:Inter,sans-serif;display:grid;grid-template-columns:255px 1fr;gap:48px">
+      <aside style="min-width:0">
+        <div style="width:185px;height:185px;overflow:hidden;background:#f1f5f9;margin:0 0 42px 28px">${avatarHtml}</div>
+        ${contactHtml}
+        ${educationHtml}
+        ${skillsHtml}
+      </aside>
+      <main style="min-width:0">
+        <header style="margin-bottom:44px">
+          <h1 style="margin:0;font-size:40px;font-weight:900;text-transform:uppercase;line-height:1;letter-spacing:0.14em;color:${navy};word-break:break-word">${escapeHtml(data.personal.name || "Your Name")}</h1>
+          <p style="margin:14px 0 0;font-size:23px;font-weight:300;letter-spacing:0.08em;color:${navy}">${escapeHtml(data.personal.headline || "Professional Title")}</p>
+          ${data.summary ? `<p style="margin:32px 0 0;max-width:520px;font-size:12.5px;line-height:1.65;letter-spacing:0.03em;color:${navy}">${escapeHtml(data.summary)}</p>` : ""}
+        </header>
+        ${experienceHtml}
+        ${additionalHtml}
+        <section>
+          ${heading("Reference")}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px">
+            <div>
+              <p style="margin:0;font-size:16px;font-weight:500;color:${navy}">${escapeHtml(data.personal.name || "Reference Name")}</p>
+              ${data.personal.phone ? `<p style="margin:8px 0 0;font-size:11.5px;color:${navy}">Phone: ${escapeHtml(data.personal.phone)}</p>` : ""}
+              ${data.personal.email ? `<p style="margin:2px 0 0;font-size:11.5px;color:${navy}">Email: ${escapeHtml(data.personal.email)}</p>` : ""}
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  `;
+}
+
 export function renderResumeHtml(data: ResumeData, template: TemplateId, accent?: string) {
   let activeAccent = accent || data.color;
   if (!activeAccent) {
     if (template === "corporate") activeAccent = "#059669";
     else if (template === "sea") activeAccent = "#0d9488";
+    else if (template === "classic") activeAccent = "#17201f";
+    else if (template === "executive") activeAccent = "#27456d";
     else activeAccent = "#2563eb";
   }
 
@@ -977,6 +1262,10 @@ export function renderResumeHtml(data: ResumeData, template: TemplateId, accent?
     htmlContent = renderSea(data, activeAccent);
   } else if (template === "creative") {
     htmlContent = renderCreative(data, activeAccent);
+  } else if (template === "classic") {
+    htmlContent = renderClassic(data);
+  } else if (template === "executive") {
+    htmlContent = renderExecutive(data);
   } else {
     htmlContent = renderModern(data, activeAccent);
   }
