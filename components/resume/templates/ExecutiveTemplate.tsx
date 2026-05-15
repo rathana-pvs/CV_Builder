@@ -1,7 +1,7 @@
 import React from "react";
 import type { ReactNode } from "react";
 import type { ResumeData } from "@/lib/resume-types";
-import { DescriptionList, SkillTag } from "../shared";
+import { DescriptionList, RichTextBlock, SkillTag } from "../shared";
 
 type Props = {
   data: ResumeData;
@@ -166,9 +166,10 @@ export function ExecutiveTemplate({ data }: Props) {
               return (
                 <section key={sectionKey} className="animate-fadeIn">
                   <Heading>Executive Profile</Heading>
-                  <p className="text-[13px] leading-[1.7] text-slate-600 max-w-3xl whitespace-pre-line">
-                    {data.summary}
-                  </p>
+                  <RichTextBlock
+                    value={data.summary}
+                    className="text-[13px] leading-[1.7] text-slate-600 max-w-3xl whitespace-pre-line"
+                  />
                 </section>
               );
             }
@@ -233,11 +234,7 @@ export function ExecutiveTemplate({ data }: Props) {
                                 </a>
                               )}
                             </div>
-                            {item.description && (
-                              <p className="mt-1 text-[12px] text-slate-600 leading-relaxed">
-                                {item.description}
-                              </p>
-                            )}
+                            <RichTextBlock value={item.description} className="mt-1 text-[12px] text-slate-600 leading-relaxed" />
                           </div>
                         ))}
                       </div>

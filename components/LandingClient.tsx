@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, message, Spin } from "antd";
+import { Button, Card, message, Modal, Spin } from "antd";
 import { 
+  CopyOutlined,
+  FileAddOutlined,
   RightOutlined, 
   FileDoneOutlined, 
   LayoutOutlined, 
@@ -15,7 +17,9 @@ import {
   SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { TEMPLATES } from "@/components/resume/TemplateRegistry";
+import { ResumeTemplate } from "@/components/resume/ResumeTemplate";
 import type { TemplateId } from "@/lib/resume-types";
+import { sampleResumeData } from "@/lib/sample-resume";
 import { LinkedInImportModal } from "@/components/import/LinkedInImportModal";
 import { BrandLogo } from "@/components/brand/LogoMark";
 
@@ -42,17 +46,26 @@ const templateBadges: Record<TemplateId, string> = {
 export function LandingClient() {
   const router = useRouter();
   const [loadingTemplate, setLoadingTemplate] = useState<TemplateId | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId | null>(null);
+  const [creatingMode, setCreatingMode] = useState<"empty" | "sample" | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const activeTemplate = loadingTemplate ? TEMPLATES[loadingTemplate] : null;
+  const selectedTemplateConfig = selectedTemplate ? TEMPLATES[selectedTemplate] : null;
 
-  const handleSelectTemplate = async (templateId: TemplateId) => {
-    if (loadingTemplate) return;
+  const openTemplateChoice = (templateId: TemplateId) => {
+    if (loadingTemplate || creatingMode) return;
+    setSelectedTemplate(templateId);
+  };
+
+  const createResume = async (templateId: TemplateId, dataMode: "empty" | "sample") => {
+    if (loadingTemplate || creatingMode) return;
     setLoadingTemplate(templateId);
+    setCreatingMode(dataMode);
     try {
       const res = await fetch("/api/resumes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ template: templateId }),
+        body: JSON.stringify({ template: templateId, dataMode }),
       });
 
       if (!res.ok) throw new Error("Failed to create");
@@ -62,12 +75,83 @@ export function LandingClient() {
     } catch (err) {
       message.error("Something went wrong creating your resume.");
       setLoadingTemplate(null);
+      setCreatingMode(null);
     }
   };
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] text-slate-950">
       <LinkedInImportModal open={importOpen} onClose={() => setImportOpen(false)} />
+      <Modal
+        open={Boolean(selectedTemplate)}
+        title={
+          <span className="text-lg font-black text-slate-900">
+            Choose CV content
+          </span>
+        }
+        footer={null}
+        onCancel={() => {
+          if (!creatingMode) setSelectedTemplate(null);
+        }}
+        centered
+        width={560}
+      >
+        {selectedTemplateConfig ? (
+          <div>
+            <p className="m-0 pb-4 text-sm text-slate-500">
+              Create a CV with the {selectedTemplateConfig.name} template.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-white p-5 text-left shadow-sm">
+                <div>
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+                    <FileAddOutlined className="text-lg" />
+                  </div>
+                  <h3 className="m-0 text-base font-black text-slate-900">Empty CV</h3>
+                  <p className="m-0 mt-2 text-sm leading-6 text-slate-500">
+                    Start with blank fields and build the resume from scratch.
+                  </p>
+                </div>
+                <div className="mt-auto pt-5">
+                  <Button
+                    block
+                    onClick={() => createResume(selectedTemplateConfig.id, "empty")}
+                    loading={creatingMode === "empty"}
+                    disabled={creatingMode === "sample"}
+                    className="h-10 rounded-lg font-bold"
+                  >
+                    Start empty
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex h-full flex-col rounded-lg border border-blue-200 bg-blue-50/60 p-5 text-left shadow-sm">
+                <div>
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-blue-600 text-white">
+                    <CopyOutlined className="text-lg" />
+                  </div>
+                  <h3 className="m-0 text-base font-black text-slate-900">Sample Data</h3>
+                  <p className="m-0 mt-2 text-sm leading-6 text-slate-500">
+                    Use the software engineer sample as a realistic starting point.
+                  </p>
+                </div>
+                <div className="mt-auto pt-5">
+                  <Button
+                    block
+                    type="primary"
+                    onClick={() => createResume(selectedTemplateConfig.id, "sample")}
+                    loading={creatingMode === "sample"}
+                    disabled={creatingMode === "empty"}
+                    className="h-10 rounded-lg bg-blue-600 font-bold"
+                  >
+                    Use sample
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
       {activeTemplate ? (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/88 backdrop-blur-sm">
           <div className="mx-6 w-full max-w-md rounded-lg border border-slate-200 bg-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.14)]">
@@ -285,60 +369,20 @@ export function LandingClient() {
                       disabled={Boolean(loadingTemplate)}
                       className="h-11 translate-y-3 rounded-lg border-none bg-blue-600 px-6 text-sm font-bold shadow-lg transition-all duration-300 hover:bg-blue-700 group-hover:translate-y-0"
                       icon={<RightOutlined />}
-                      onClick={() => handleSelectTemplate(template.id)}
+                      onClick={() => openTemplateChoice(template.id)}
                     >
                       Use template
                     </Button>
                   </div>
                   
-                  <div className="flex h-full w-full flex-col rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-transform duration-500 group-hover:scale-[1.02]">
-                    <div className="mb-3 flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-2 h-3 w-3/4 rounded" style={{ backgroundColor: template.accentColor }} />
-                        <div className="h-2 w-1/2 rounded bg-slate-100" />
-                      </div>
-                      <div className="rounded bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-500 ring-1 ring-slate-200">
-                        {templateBadges[template.id]}
-                      </div>
+                  <div className="absolute right-4 top-4 z-[1] rounded bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-500 shadow-sm ring-1 ring-slate-200">
+                    {templateBadges[template.id]}
+                  </div>
+
+                  <div className="relative h-full w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-transform duration-500 group-hover:scale-[1.02]">
+                    <div className="pointer-events-none absolute left-1/2 top-3 w-[900px] origin-top -translate-x-1/2 scale-[0.24] md:scale-[0.27] lg:scale-[0.24] xl:scale-[0.27]">
+                      <ResumeTemplate data={sampleResumeData} template={template.id} />
                     </div>
-                    
-                    {template.id === 'creative' ? (
-                      <div className="flex flex-1 gap-3">
-                        <div className="flex w-1/3 flex-col gap-2 border-r border-slate-100 pr-3">
-                          <div className="h-2 w-full rounded bg-slate-100" />
-                          <div className="h-2 w-5/6 rounded bg-slate-100" />
-                          <div className="mt-2 h-16 rounded bg-slate-50" />
-                        </div>
-                        <div className="flex flex-1 flex-col gap-2">
-                          <div className="h-20 w-full rounded border border-dashed border-slate-200 bg-slate-50" />
-                          <div className="h-2 w-4/5 rounded bg-slate-100" />
-                        </div>
-                      </div>
-                    ) : template.id === 'sea' ? (
-                      <div className="flex flex-1 flex-row-reverse gap-3">
-                        <div className="flex w-1/3 flex-col gap-2 rounded bg-teal-50 p-2">
-                          <div className="mx-auto h-8 w-8 rounded-full bg-teal-200" />
-                          <div className="h-1 w-full rounded bg-teal-200" />
-                          <div className="h-1 w-5/6 rounded bg-teal-200" />
-                        </div>
-                        <div className="flex flex-1 flex-col gap-2">
-                           <div className="h-2 w-full rounded bg-slate-100" />
-                           <div className="h-2 w-full rounded bg-slate-100" />
-                           <div className="h-2 w-3/4 rounded bg-slate-100" />
-                           <div className="mt-2 h-10 rounded border border-dashed border-slate-200 bg-white" />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="h-2 w-full rounded bg-slate-100" />
-                        <div className="h-2 w-full rounded bg-slate-100" />
-                        <div className="h-2 w-2/3 rounded bg-slate-100" />
-                        <div className="mt-2 flex gap-2">
-                          <div className="h-12 flex-1 rounded border border-dashed border-slate-200 bg-slate-50" />
-                          <div className="h-12 flex-1 rounded border border-dashed border-slate-200 bg-slate-50" />
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
                 
@@ -355,7 +399,7 @@ export function LandingClient() {
                     className="h-10 rounded-lg border-blue-100 bg-blue-50/70 font-bold text-blue-700 md:hidden"
                     loading={loadingTemplate === template.id}
                     disabled={Boolean(loadingTemplate)}
-                    onClick={() => handleSelectTemplate(template.id)}
+                    onClick={() => openTemplateChoice(template.id)}
                   >
                     Choose template
                   </Button>

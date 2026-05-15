@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { randomUUID } from "crypto";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { sampleResumeData } from "@/lib/sample-resume";
+import { emptyResumeData, sampleResumeData } from "@/lib/sample-resume";
 import { uniqueResumeSlug, uniqueResumeTitle } from "@/lib/slug";
 import { guestResumeCookieName } from "@/lib/resume-access";
 import { isTemplateId } from "@/lib/resume-types";
@@ -26,9 +26,11 @@ export async function POST(req: Request) {
   const userId = session?.user?.id;
 
   let chosenTemplate = "modern";
+  let dataMode: "empty" | "sample" = "sample";
   try {
     const body = await req.json();
     if (isTemplateId(body.template)) chosenTemplate = body.template;
+    if (body.dataMode === "empty") dataMode = "empty";
   } catch {
     // ignore body parsing errors
   }
@@ -43,7 +45,7 @@ export async function POST(req: Request) {
       title,
       slug,
       template: chosenTemplate,
-      dataJson: sampleResumeData,
+      dataJson: dataMode === "empty" ? emptyResumeData : sampleResumeData,
       isPublic: false,
     },
   });

@@ -1,20 +1,23 @@
 import type { ReactNode } from "react";
+import { renderRichTextBlock, renderRichTextDescription } from "@/lib/rich-text";
 
 export function DescriptionList({ value }: { value?: string | null }) {
-  if (!value) return null;
-  const items = value
-    .split("\n")
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const html = renderRichTextDescription(value);
+  if (!html) return null;
 
-  if (!items.length) return null;
   return (
-    <ul className="mt-2 list-disc space-y-1 pl-5 text-[12px]">
-      {items.map((item, idx) => (
-        <li key={`${item}-${idx}`}>{item}</li>
-      ))}
-    </ul>
+    <div
+      className="rich-text-content mt-2 text-[12px] text-slate-600"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
+}
+
+export function RichTextBlock({ value, className = "" }: { value?: string | null; className?: string }) {
+  const html = renderRichTextBlock(value);
+  if (!html) return null;
+
+  return <div className={`rich-text-content ${className}`} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {

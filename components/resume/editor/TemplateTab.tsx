@@ -1,14 +1,50 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Typography, FormInstance } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
 import { TEMPLATES } from "@/components/resume/TemplateRegistry";
+import { ResumeTemplate } from "@/components/resume/ResumeTemplate";
 import { ResumeData, TemplateId } from "@/lib/resume-types";
+import { sampleResumeData } from "@/lib/sample-resume";
 
 interface TemplateTabProps {
   data: ResumeData;
   template: TemplateId;
   form: FormInstance;
   syncPreview: () => void;
+}
+
+function TemplatePreviewThumbnail({ data, template }: { data: ResumeData; template: TemplateId }) {
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.25);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+
+    const updateScale = () => {
+      const { width, height } = frame.getBoundingClientRect();
+      const nextScale = Math.min(width / 794, height / 1123) * 0.96;
+      setScale(nextScale);
+    };
+
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={frameRef} className="relative h-full w-full overflow-hidden bg-slate-100">
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 w-[794px] origin-center [&_.resume-page]:!h-[1123px] [&_.resume-page]:!min-h-[1123px] [&_.resume-page]:!w-[794px]"
+        style={{
+          transform: `translate(-50%, -50%) scale(${scale})`,
+        }}
+      >
+        <ResumeTemplate data={data} template={template} />
+      </div>
+    </div>
+  );
 }
 
 export function TemplateTab({ data, template, form, syncPreview }: TemplateTabProps) {
@@ -84,6 +120,10 @@ export function TemplateTab({ data, template, form, syncPreview }: TemplateTabPr
         <div className="grid grid-cols-2 gap-4">
           {Object.values(TEMPLATES).map((tmpl) => {
             const isSelected = template === tmpl.id;
+            const previewData = {
+              ...sampleResumeData,
+              color: isSelected ? data.color : undefined,
+            };
             return (
               <div
                 key={tmpl.id}
@@ -93,24 +133,8 @@ export function TemplateTab({ data, template, form, syncPreview }: TemplateTabPr
                 }}
                 className="group flex cursor-pointer flex-col gap-2 transition-all"
               >
-                <div className={`relative flex aspect-[3/4.2] flex-col overflow-hidden rounded-lg border bg-white transition-all duration-300 ${isSelected ? "border-slate-900 shadow-sm ring-2 ring-slate-200" : "border-slate-200 group-hover:border-slate-300"}`}>
-                  <div className="flex flex-1 flex-col gap-2 overflow-hidden bg-slate-50 p-3">
-                    <div className="flex gap-2 items-center border-b border-slate-200/50 pb-1.5">
-                      <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: isSelected ? (data.color || tmpl.accentColor) : tmpl.accentColor }} />
-                      <div className="h-1.5 bg-slate-200 rounded w-2/3"></div>
-                    </div>
-                    <div className="h-1 bg-slate-200 rounded w-full opacity-50"></div>
-                    <div className="h-1 bg-slate-200 rounded w-full opacity-50"></div>
-                    <div className="mt-1 h-1 bg-slate-200 rounded w-1/3"></div>
-                    <div className="flex gap-2">
-                      <div className="w-1/3 h-12 bg-slate-200/30 rounded"></div>
-                      <div className="w-2/3 flex flex-col gap-1.5">
-                        <div className="h-1 bg-slate-200 rounded w-full"></div>
-                        <div className="h-1 bg-slate-200 rounded w-5/6"></div>
-                        <div className="h-1 bg-slate-200 rounded w-full"></div>
-                      </div>
-                    </div>
-                  </div>
+                <div className={`relative flex aspect-[210/297] flex-col overflow-hidden rounded-lg border bg-white transition-all duration-300 ${isSelected ? "border-slate-900 shadow-sm ring-2 ring-slate-200" : "border-slate-200 group-hover:border-slate-300"}`}>
+                  <TemplatePreviewThumbnail data={previewData} template={tmpl.id} />
                   {isSelected && (
                     <div className="absolute inset-0 flex items-center justify-center bg-slate-950/5">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm">

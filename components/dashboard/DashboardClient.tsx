@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Card, Empty, Space, Tag, Typography, message, Dropdown, MenuProps } from "antd";
+import { Button, Card, Empty, Space, Tag, Typography, message, Dropdown, MenuProps, Modal } from "antd";
 import { 
   CopyOutlined, 
   DeleteOutlined, 
@@ -31,14 +31,23 @@ type Props = {
 export function DashboardClient({ resumes }: Props) {
   const router = useRouter();
   const [importOpen, setImportOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creatingMode, setCreatingMode] = useState<"empty" | "sample" | null>(null);
 
-  async function createResume() {
-    const response = await fetch("/api/resumes", { method: "POST" });
+  async function createResume(dataMode: "empty" | "sample") {
+    setCreatingMode(dataMode);
+    const response = await fetch("/api/resumes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataMode }),
+    });
+    setCreatingMode(null);
     if (!response.ok) {
       message.error("Could not create resume.");
       return;
     }
     const resume = await response.json();
+    setCreateOpen(false);
     router.push(`/resumes/${resume.id}`);
   }
 
@@ -70,6 +79,59 @@ export function DashboardClient({ resumes }: Props) {
   return (
     <div className="min-h-screen bg-[#fafafa] pb-20">
       <LinkedInImportModal open={importOpen} onClose={() => setImportOpen(false)} />
+      <Modal
+        open={createOpen}
+        title={<span className="text-lg font-black text-slate-900">Choose CV content</span>}
+        footer={null}
+        onCancel={() => !creatingMode && setCreateOpen(false)}
+        centered
+        width={560}
+      >
+        <div className="grid gap-3 pt-2 sm:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm">
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+              <FileAddOutlined className="text-lg" />
+            </div>
+            <h3 className="m-0 text-base font-black text-slate-900">Empty CV</h3>
+            <p className="m-0 mt-2 text-sm leading-6 text-slate-500">
+              Start with blank fields and build the resume from scratch.
+            </p>
+            <div className="mt-5">
+              <Button
+                block
+                onClick={() => createResume("empty")}
+                loading={creatingMode === "empty"}
+                disabled={creatingMode === "sample"}
+                className="h-10 rounded-lg font-bold"
+              >
+                Start empty
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-5 text-left shadow-sm">
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-blue-600 text-white">
+              <CopyOutlined className="text-lg" />
+            </div>
+            <h3 className="m-0 text-base font-black text-slate-900">Sample Data</h3>
+            <p className="m-0 mt-2 text-sm leading-6 text-slate-500">
+              Use the software engineer sample as a realistic starting point.
+            </p>
+            <div className="mt-5">
+              <Button
+                block
+                type="primary"
+                onClick={() => createResume("sample")}
+                loading={creatingMode === "sample"}
+                disabled={creatingMode === "empty"}
+                className="h-10 rounded-lg bg-blue-600 font-bold"
+              >
+                Use sample
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
       {/* Custom Premium Header Bar */}
       <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-100 shadow-sm mb-10">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -124,7 +186,7 @@ export function DashboardClient({ resumes }: Props) {
               type="primary" 
               size="large"
               icon={<FileAddOutlined />} 
-              onClick={createResume}
+              onClick={() => setCreateOpen(true)}
               className="h-12 px-6 rounded-xl font-bold text-sm shadow-lg shadow-blue-600/20 bg-blue-600 hover:bg-blue-700 border-none flex items-center gap-2"
             >
               Create New Resume
@@ -154,7 +216,7 @@ export function DashboardClient({ resumes }: Props) {
               <Button 
                 type="primary" 
                 size="large" 
-                onClick={createResume}
+                onClick={() => setCreateOpen(true)}
                 className="bg-slate-900 hover:bg-slate-800 font-bold rounded-xl h-12 px-8 border-none"
               >
                 Start Building

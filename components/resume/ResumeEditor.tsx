@@ -42,10 +42,10 @@ import { useResumeStore } from "@/lib/resume-store";
 import { TEMPLATES } from "@/components/resume/TemplateRegistry";
 
 import { SortableSectionCard, SortableLayoutItem, FieldList, SkillsFieldList, LanguagesFieldList } from "./editor/SortableFields";
-import { TemplateTab } from "./editor/TemplateTab";
 import { LayoutTab } from "./editor/LayoutTab";
 import { PreviewPanel } from "./editor/PreviewPanel";
 import { TextTab } from "./editor/TextTab";
+import { RichTextInput } from "./editor/RichTextInput";
 type Props = {
   resume: ResumeRecord;
   isLoggedIn?: boolean;
@@ -59,7 +59,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
   const [saving, setSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [activeSections, setActiveSections] = useState<string[]>(["personal", "summary"]);
-  const [activeTab, setActiveTab] = useState<"template" | "text" | "layout">("text");
+  const [activeTab, setActiveTab] = useState<"text" | "layout">("text");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportFileName, setExportFileName] = useState("");
@@ -415,7 +415,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
                   {() => {
                     const img = form.getFieldValue("image");
                     return (
-                      <div className="mb-4 flex items-center gap-4 p-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                      <div className="mb-4 flex items-center gap-4 rounded-xl border border-dashed border-slate-200/80 bg-slate-50/40 p-4">
                         {img ? (
                           <div className="relative w-16 h-16 rounded-full overflow-hidden border border-slate-100 flex-shrink-0 group shadow-sm">
                             <img src={img} alt="Profile" className="w-full h-full object-cover" />
@@ -497,10 +497,9 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
             icon: <FileTextOutlined />,
             content: (
               <Form.Item name="summary" noStyle>
-                <Input.TextArea
-                  rows={5}
+                <RichTextInput
+                  minRows={5}
                   placeholder="Write a brief professional summary about your skills, accomplishments, and career goals..."
-                  className="rounded-xl p-3"
                 />
               </Form.Item>
             )
@@ -623,17 +622,16 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
         };
 
         return (
-          <div className="grid h-[calc(100vh-64px)] flex-1 grid-cols-[minmax(420px,560px)_1fr] overflow-hidden max-xl:grid-cols-1">
+          <div className="grid h-[calc(100vh-64px)] flex-1 grid-cols-2 overflow-hidden max-xl:grid-cols-1">
             <div className="flex h-full flex-col overflow-hidden border-r border-slate-200 bg-slate-50/70">
               <div className="border-b border-slate-200 bg-white px-5 py-4">
                 <div className="mb-4">
                   <p className="m-0 text-sm font-semibold text-slate-900">Workspace</p>
                   <p className="mt-1 text-xs text-slate-500">Edit content, change template, and control document order.</p>
                 </div>
-                <div className="grid grid-cols-3 gap-2 rounded-lg bg-slate-100 p-1">
+                <div className="grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
                 {([
                   { key: 'text', label: 'Text' },
-                  { key: 'template', label: 'Style' },
                   { key: 'layout', label: 'Layout' }
                 ] as const).map((tab) => (
                   <button
@@ -654,14 +652,6 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
 
               <Form form={form} layout="vertical" onValuesChange={syncPreview} className="flex-1 overflow-hidden flex flex-col">
                 <div className="flex-1 overflow-y-auto p-4 md:p-5">
-                  {activeTab === 'template' && (
-                    <TemplateTab
-                      data={data}
-                      template={template}
-                      form={form}
-                      syncPreview={syncPreview}
-                    />
-                  )}
                   {activeTab === 'text' && (
                     <TextTab
                       sectionsOrder={sectionsOrder}
@@ -682,7 +672,12 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
               </Form>
             </div>
 
-            <PreviewPanel previewData={previewData} template={template} />
+            <PreviewPanel
+              previewData={previewData}
+              template={template}
+              form={form}
+              syncPreview={syncPreview}
+            />
           </div>
         );
       })()}

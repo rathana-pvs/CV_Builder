@@ -1,4 +1,5 @@
 import type { ResumeData, TemplateId } from "@/lib/resume-types";
+import { renderRichTextBlock as renderRichTextBlockHtml, renderRichTextDescription } from "@/lib/rich-text";
 
 function escapeHtml(value = "") {
   return String(value)
@@ -82,18 +83,17 @@ function renderSkillTag(skill: string, style: "line" | "stars" | "none" = "line"
 }
 
 function renderDescriptionList(value?: string | null) {
-  if (!value) return "";
-  const items = value
-    .split("\n")
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const html = renderRichTextDescription(value);
+  return html ? `<div class="rich-text-content mt-2 text-[12px] text-slate-600">${html}</div>` : "";
+}
 
-  if (!items.length) return "";
-  return `
-    <ul class="mt-2 list-disc space-y-1 pl-5 text-[12px] text-slate-600">
-      ${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
-    </ul>
-  `;
+function renderRichTextBlock(value?: string | null, className = "", style = "") {
+  const html = renderRichTextBlockHtml(value);
+  if (!html) return "";
+
+  const classAttr = className ? ` class="rich-text-content ${className}"` : ` class="rich-text-content"`;
+  const styleAttr = style ? ` style="${style}"` : "";
+  return `<div${classAttr}${styleAttr}>${html}</div>`;
 }
 
 function renderModern(data: ResumeData, accent: string) {
@@ -163,7 +163,7 @@ function renderModern(data: ResumeData, accent: string) {
         <span class="inline-block w-1 h-5 rounded-full flex-shrink-0" style="background: ${accent}"></span>
         <h3 class="m-0 text-[10px] font-black uppercase tracking-[0.15em] text-slate-500">Profile</h3>
       </div>
-      <p class="m-0 text-slate-600 text-[13px]">${escapeHtml(data.summary)}</p>
+      ${renderRichTextBlock(data.summary, "m-0 text-slate-600 text-[13px]")}
     </section>
   ` : "";
 
@@ -214,7 +214,7 @@ function renderModern(data: ResumeData, accent: string) {
                 </span>
               ` : ""}
             </div>
-            ${item.description ? `<p class="m-0 mt-1 text-[12px] text-slate-600">${escapeHtml(item.description)}</p>` : ""}
+            ${renderRichTextBlock(item.description, "m-0 mt-1 text-[12px] text-slate-600")}
           </div>
         `).join("")}
       </div>
@@ -234,7 +234,7 @@ function renderModern(data: ResumeData, accent: string) {
               <h4 class="m-0 font-bold text-slate-900 text-[13px]">${escapeHtml(item.name)}</h4>
               ${item.link ? `<span class="text-[10px] text-slate-400 mt-0.5">${escapeHtml(item.link)}</span>` : ""}
             </div>
-            ${item.description ? `<p class="m-0 mt-1 text-[12px] text-slate-600">${escapeHtml(item.description)}</p>` : ""}
+            ${renderRichTextBlock(item.description, "m-0 mt-1 text-[12px] text-slate-600")}
           </div>
         `).join("")}
       </div>
@@ -291,7 +291,7 @@ function renderMinimal(data: ResumeData, accent: string) {
 
   const summaryHtml = data.summary ? `
     <section class="mt-8">
-      <p class="m-0 text-center text-slate-500 italic text-[12.5px] leading-relaxed max-w-xl mx-auto">${escapeHtml(data.summary)}</p>
+      ${renderRichTextBlock(data.summary, "m-0 text-center text-slate-500 italic text-[12.5px] leading-relaxed max-w-xl mx-auto")}
     </section>
   ` : "";
 
@@ -323,7 +323,7 @@ function renderMinimal(data: ResumeData, accent: string) {
           <div>
             <h4 class="m-0 text-[13px] font-bold text-slate-900">${escapeHtml(item.name)}</h4>
             ${item.link ? `<p class="m-0 text-[11px] text-slate-400">${escapeHtml(item.link)}</p>` : ""}
-            ${item.description ? `<p class="m-0 mt-1 text-[12px] text-slate-600">${escapeHtml(item.description)}</p>` : ""}
+            ${renderRichTextBlock(item.description, "m-0 mt-1 text-[12px] text-slate-600")}
           </div>
         `).join("")}
       </div>
@@ -451,7 +451,7 @@ function renderCorporate(data: ResumeData, accent: string) {
   const summaryHtml = data.summary ? `
     <section class="mb-8">
       ${sectionHeading("Profile")}
-      <p class="m-0 text-slate-600 text-[12px] leading-[1.7] text-justify">${escapeHtml(data.summary)}</p>
+      ${renderRichTextBlock(data.summary, "m-0 text-slate-600 text-[12px] leading-[1.7] text-justify")}
     </section>
   ` : "";
 
@@ -489,7 +489,7 @@ function renderCorporate(data: ResumeData, accent: string) {
               <h4 class="m-0 font-bold text-slate-950 text-[13px]">${escapeHtml(item.name)}</h4>
               ${item.link ? `<span class="text-[10px] text-slate-400 font-medium font-mono">${escapeHtml(item.link)}</span>` : ""}
             </div>
-            ${item.description ? `<p class="m-0 mt-1.5 text-[11.5px] text-slate-600 leading-relaxed">${escapeHtml(item.description)}</p>` : ""}
+            ${renderRichTextBlock(item.description, "m-0 mt-1.5 text-[11.5px] text-slate-600 leading-relaxed")}
           </div>
         `).join("")}
       </div>
@@ -525,7 +525,7 @@ function renderCorporate(data: ResumeData, accent: string) {
             <p class="m-0 text-[10px] text-slate-400 font-semibold mt-1">
               ${[item.startDate, item.endDate].filter(Boolean).map(escapeHtml).join(" – ")}
             </p>
-            ${item.description ? `<p class="m-0 mt-1.5 text-[11px] text-slate-500 leading-normal">${escapeHtml(item.description)}</p>` : ""}
+            ${renderRichTextBlock(item.description, "m-0 mt-1.5 text-[11px] text-slate-500 leading-normal")}
           </div>
         `).join("")}
       </div>
@@ -671,7 +671,7 @@ function renderSea(data: ResumeData, accent: string) {
         <h3 class="m-0 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">About</h3>
         <div class="flex-1 h-px bg-slate-100"></div>
       </div>
-      <p class="m-0 text-slate-600 text-[12.5px] leading-relaxed">${escapeHtml(data.summary)}</p>
+      ${renderRichTextBlock(data.summary, "m-0 text-slate-600 text-[12.5px] leading-relaxed")}
     </section>
   ` : "";
 
@@ -726,7 +726,7 @@ function renderSea(data: ResumeData, accent: string) {
               <p class="m-0 text-[10px] text-slate-400">
                 ${[item.startDate, item.endDate].filter(Boolean).map(escapeHtml).join(" – ")}
               </p>
-              ${item.description ? `<p class="m-0 mt-1 text-[12px] text-slate-600">${escapeHtml(item.description)}</p>` : ""}
+              ${renderRichTextBlock(item.description, "m-0 mt-1 text-[12px] text-slate-600")}
             </div>
           </div>
         `).join("")}
@@ -747,7 +747,7 @@ function renderSea(data: ResumeData, accent: string) {
               <h4 class="m-0 font-bold text-slate-900 text-[13px]">${escapeHtml(item.name)}</h4>
               ${item.link ? `<span class="text-[10px] text-slate-400">${escapeHtml(item.link)}</span>` : ""}
             </div>
-            ${item.description ? `<p class="m-0 mt-1 text-[12px] text-slate-600">${escapeHtml(item.description)}</p>` : ""}
+            ${renderRichTextBlock(item.description, "m-0 mt-1 text-[12px] text-slate-600")}
           </div>
         `).join("")}
       </div>
@@ -859,7 +859,7 @@ function renderCreative(data: ResumeData, accent: string) {
   const summaryHtml = data.summary ? `
     <section style="margin-bottom:22px">
       ${sectionTitle("Profile")}
-      <p style="margin:0;font-size:12px;color:#475569;line-height:1.7">${escapeHtml(data.summary)}</p>
+      ${renderRichTextBlock(data.summary, "", "margin:0;font-size:12px;color:#475569;line-height:1.7")}
     </section>` : "";
 
   const expHtml = data.experience.length > 0 ? `
@@ -891,7 +891,7 @@ function renderCreative(data: ResumeData, accent: string) {
             </div>
             ${(edu.startDate || edu.endDate) ? `<span style="font-size:10px;color:#94a3b8;font-weight:500;white-space:nowrap;margin-top:2px;flex-shrink:0">${[edu.startDate, edu.endDate].filter(Boolean).join(" – ")}</span>` : ""}
           </div>
-          ${edu.description ? `<p style="margin:4px 0 0;font-size:11.5px;color:#475569">${escapeHtml(edu.description)}</p>` : ""}
+          ${renderRichTextBlock(edu.description, "", "margin:4px 0 0;font-size:11.5px;color:#475569")}
         `, idx === data.education.length - 1)).join("")}
       </div>
     </section>` : "";
@@ -906,7 +906,7 @@ function renderCreative(data: ResumeData, accent: string) {
               <h4 style="margin:0;font-size:12.5px;font-weight:700;color:#0f172a">${escapeHtml(proj.name)}</h4>
               ${proj.link ? `<span style="font-size:10px;color:#94a3b8">${escapeHtml(proj.link)}</span>` : ""}
             </div>
-            ${proj.description ? `<p style="margin:4px 0 0;font-size:11.5px;color:#475569;line-height:1.6">${escapeHtml(proj.description)}</p>` : ""}
+            ${renderRichTextBlock(proj.description, "", "margin:4px 0 0;font-size:11.5px;color:#475569;line-height:1.6")}
           </div>`).join("")}
       </div>
     </section>` : "";
@@ -1003,7 +1003,7 @@ function renderClassic(data: ResumeData) {
   const summaryHtml = data.summary ? `
     <section style="margin-bottom:28px">
       ${ruleTitle("About Me")}
-      <p style="margin:0;font-size:12.8px;line-height:1.6;letter-spacing:0.01em;color:#2f3634">${escapeHtml(data.summary)}</p>
+      ${renderRichTextBlock(data.summary, "", "margin:0;font-size:12.8px;line-height:1.6;letter-spacing:0.01em;color:#2f3634")}
     </section>
   ` : "";
 
@@ -1050,7 +1050,7 @@ function renderClassic(data: ResumeData) {
       <div>
         <h4 style="margin:0;font-size:14px;font-weight:900;color:#17201f">${escapeHtml(item.name)}</h4>
         ${item.link ? `<p style="margin:3px 0 0;font-size:10.5px;font-weight:700;color:#5b6461">${escapeHtml(item.link)}</p>` : ""}
-        ${item.description ? `<p style="margin:6px 0 0;font-size:11.5px;line-height:1.5;color:#2f3634">${escapeHtml(item.description)}</p>` : ""}
+        ${renderRichTextBlock(item.description, "", "margin:6px 0 0;font-size:11.5px;line-height:1.5;color:#2f3634")}
       </div>
     `),
     ...data.certifications.map((item) => `
@@ -1222,7 +1222,7 @@ function renderExecutive(data: ResumeData) {
         <header style="margin-bottom:44px">
           <h1 style="margin:0;font-size:40px;font-weight:900;text-transform:uppercase;line-height:1;letter-spacing:0.14em;color:${navy};word-break:break-word">${escapeHtml(data.personal.name || "Your Name")}</h1>
           <p style="margin:14px 0 0;font-size:23px;font-weight:300;letter-spacing:0.08em;color:${navy}">${escapeHtml(data.personal.headline || "Professional Title")}</p>
-          ${data.summary ? `<p style="margin:32px 0 0;max-width:520px;font-size:12.5px;line-height:1.65;letter-spacing:0.03em;color:${navy}">${escapeHtml(data.summary)}</p>` : ""}
+          ${renderRichTextBlock(data.summary, "", `margin:32px 0 0;max-width:520px;font-size:12.5px;line-height:1.65;letter-spacing:0.03em;color:${navy}`)}
         </header>
         ${experienceHtml}
         ${additionalHtml}
@@ -1293,6 +1293,35 @@ export function renderResumeHtml(data: ResumeData, template: TemplateId, accent?
       position: relative;
       display: flex;
       flex-direction: column;
+    }
+    .rich-text-input p,
+    .rich-text-input ul,
+    .rich-text-input ol,
+    .rich-text-content p,
+    .rich-text-content ul,
+    .rich-text-content ol {
+      margin-bottom: 0;
+      margin-top: 0.35rem;
+    }
+    .rich-text-input ul,
+    .rich-text-content ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .rich-text-input ol,
+    .rich-text-content ol {
+      list-style: decimal;
+      padding-left: 1.25rem;
+    }
+    .rich-text-input li,
+    .rich-text-content li {
+      margin-top: 0.15rem;
+    }
+    .rich-text-input a,
+    .rich-text-content a {
+      color: var(--resume-accent, #2563eb);
+      overflow-wrap: anywhere;
+      text-decoration: underline;
     }
   </style>
 </head>

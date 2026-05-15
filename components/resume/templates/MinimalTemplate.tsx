@@ -1,5 +1,5 @@
 import React from "react";
-import { DescriptionList, SkillTag } from "../shared";
+import { DescriptionList, RichTextBlock, SkillTag } from "../shared";
 import type { ResumeData } from "@/lib/resume-types";
 
 type Props = {
@@ -24,9 +24,10 @@ export function MinimalTemplate({ data }: Props) {
 
   const summaryEl = data.summary ? (
     <section className="mt-8">
-      <p className="m-0 text-center text-slate-500 italic text-[12.5px] leading-relaxed max-w-xl mx-auto">
-        {data.summary}
-      </p>
+      <RichTextBlock
+        value={data.summary}
+        className="m-0 text-center text-slate-500 italic text-[12.5px] leading-relaxed max-w-xl mx-auto"
+      />
     </section>
   ) : null;
 
@@ -68,7 +69,7 @@ export function MinimalTemplate({ data }: Props) {
           <div key={`${item.name}-${index}`}>
             <h4 className="m-0 text-[13px] font-bold text-slate-900">{item.name}</h4>
             {item.link && <p className="m-0 text-[11px] text-slate-400">{item.link}</p>}
-            {item.description && <p className="m-0 mt-1 text-[12px] text-slate-600">{item.description}</p>}
+            <RichTextBlock value={item.description} className="m-0 mt-1 text-[12px] text-slate-600" />
           </div>
         ))}
       </div>

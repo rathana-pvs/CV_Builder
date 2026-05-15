@@ -1,7 +1,7 @@
 import React from "react";
 import type { ReactNode } from "react";
 import type { ResumeData } from "@/lib/resume-types";
-import { DescriptionList, SkillTag } from "../shared";
+import { DescriptionList, RichTextBlock, SkillTag } from "../shared";
 
 type Props = {
   data: ResumeData;
@@ -115,9 +115,10 @@ export function ClassicTemplate({ data }: Props) {
             return (
               <section key={sectionKey}>
                 <SectionTitle>Professional Summary</SectionTitle>
-                <p className="m-0 text-[13px] leading-[1.7] text-slate-600 text-justify font-serif whitespace-pre-line pl-1">
-                  {summary}
-                </p>
+                <RichTextBlock
+                  value={summary}
+                  className="m-0 text-[13px] leading-[1.7] text-slate-600 text-justify font-serif whitespace-pre-line pl-1"
+                />
               </section>
             );
           }
@@ -233,11 +234,7 @@ export function ClassicTemplate({ data }: Props) {
                               )}
                             </h4>
                           </div>
-                          {item.description && (
-                            <p className="mt-1 text-[12.5px] leading-relaxed text-slate-600">
-                              {item.description}
-                            </p>
-                          )}
+                          <RichTextBlock value={item.description} className="mt-1 text-[12.5px] leading-relaxed text-slate-600" />
                         </div>
                       ))}
                     </div>

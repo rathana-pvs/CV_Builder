@@ -1,5 +1,5 @@
 import React from "react";
-import { DescriptionList, SkillTag } from "../shared";
+import { DescriptionList, RichTextBlock, SkillTag } from "../shared";
 import type { ResumeData } from "@/lib/resume-types";
 
 type Props = {
@@ -92,7 +92,7 @@ export function SeaTemplate({ data }: Props) {
 
   const summaryEl = data.summary ? (
     <MainSection title="About">
-      <p className="m-0 text-slate-600 text-[12.5px] leading-relaxed">{data.summary}</p>
+      <RichTextBlock value={data.summary} className="m-0 text-slate-600 text-[12.5px] leading-relaxed" />
     </MainSection>
   ) : null;
 
@@ -150,7 +150,7 @@ export function SeaTemplate({ data }: Props) {
               <p className="m-0 text-[10px] text-slate-400">
                 {[item.startDate, item.endDate].filter(Boolean).join(" – ")}
               </p>
-              {item.description && <p className="m-0 mt-1 text-[12px] text-slate-600">{item.description}</p>}
+              <RichTextBlock value={item.description} className="m-0 mt-1 text-[12px] text-slate-600" />
             </div>
           </div>
         ))}
@@ -169,7 +169,7 @@ export function SeaTemplate({ data }: Props) {
                 <span className="text-[10px] text-slate-400">{item.link}</span>
               )}
             </div>
-            {item.description && <p className="m-0 mt-1 text-[12px] text-slate-600">{item.description}</p>}
+            <RichTextBlock value={item.description} className="m-0 mt-1 text-[12px] text-slate-600" />
           </div>
         ))}
       </div>

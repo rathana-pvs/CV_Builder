@@ -1,5 +1,5 @@
 import React from "react";
-import { DescriptionList, SkillTag } from "../shared";
+import { DescriptionList, RichTextBlock, SkillTag } from "../shared";
 import type { ResumeData } from "@/lib/resume-types";
 
 type Props = {
@@ -145,7 +145,7 @@ export function CreativeTemplate({ data }: Props) {
   const summaryEl = summary ? (
     <section className="mb-6">
       <MainSectionTitle>Profile</MainSectionTitle>
-      <p className="m-0 text-slate-600 text-[12px] leading-[1.7]">{summary}</p>
+      <RichTextBlock value={summary} className="m-0 text-slate-600 text-[12px] leading-[1.7]" />
     </section>
   ) : null;
 
@@ -201,9 +201,7 @@ export function CreativeTemplate({ data }: Props) {
                 </span>
               )}
             </div>
-            {item.description && (
-              <p className="m-0 mt-1 text-[11.5px] text-slate-600">{item.description}</p>
-            )}
+            <RichTextBlock value={item.description} className="m-0 mt-1 text-[11.5px] text-slate-600" />
           </TimelineEntry>
         ))}
       </div>
@@ -222,11 +220,7 @@ export function CreativeTemplate({ data }: Props) {
                 <span className="text-[10px] text-slate-400">{item.link}</span>
               )}
             </div>
-            {item.description && (
-              <p className="m-0 mt-1 text-[11.5px] text-slate-600 leading-relaxed">
-                {item.description}
-              </p>
-            )}
+            <RichTextBlock value={item.description} className="m-0 mt-1 text-[11.5px] text-slate-600 leading-relaxed" />
           </div>
         ))}
       </div>

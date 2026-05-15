@@ -1,5 +1,5 @@
 import React from "react";
-import { DescriptionList, SkillTag } from "../shared";
+import { DescriptionList, RichTextBlock, SkillTag } from "../shared";
 import type { ResumeData } from "@/lib/resume-types";
 
 type Props = {
@@ -98,7 +98,7 @@ export function ModernTemplate({ data }: Props) {
   const summaryBlock = data.summary && (
     <section className="mb-7" key="summary">
       <SectionTitle>Profile</SectionTitle>
-      <p className="m-0 text-slate-600 text-[13px]">{data.summary}</p>
+      <RichTextBlock value={data.summary} className="m-0 text-slate-600 text-[13px]" />
     </section>
   );
 
@@ -145,7 +145,7 @@ export function ModernTemplate({ data }: Props) {
                 </span>
               )}
             </div>
-            {item.description && <p className="m-0 mt-1 text-[12px] text-slate-600">{item.description}</p>}
+            <RichTextBlock value={item.description} className="m-0 mt-1 text-[12px] text-slate-600" />
           </div>
         ))}
       </div>
@@ -164,7 +164,7 @@ export function ModernTemplate({ data }: Props) {
                 <span className="text-[10px] text-slate-400 mt-0.5">{item.link}</span>
               )}
             </div>
-            {item.description && <p className="m-0 mt-1 text-[12px] text-slate-600">{item.description}</p>}
+            <RichTextBlock value={item.description} className="m-0 mt-1 text-[12px] text-slate-600" />
           </div>
         ))}
       </div>

@@ -30,6 +30,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { RichTextInput } from "./RichTextInput";
 
 interface SortableFieldItemProps {
   id: string;
@@ -79,8 +80,8 @@ export function SortableFieldItem({
       <div
         className={`flex-1 rounded-lg border bg-white transition-all duration-200 ${
           isExpanded 
-            ? "border-slate-900 shadow-sm ring-2 ring-slate-100" 
-            : "border-slate-200 hover:border-slate-300"
+            ? "border-slate-200 shadow-sm ring-1 ring-slate-100"
+            : "border-slate-100 hover:border-slate-200"
         }`}
       >
         <div 
@@ -140,10 +141,9 @@ export function SortableFieldItem({
                         } : {})}
                       >
                         {field === "description" ? (
-                          <Input.TextArea
-                            rows={3}
+                          <RichTextInput
+                            minRows={3}
                             placeholder={`Describe your details...`}
-                            className="rounded-lg"
                           />
                         ) : field === "degree" && name === "education" ? (
                           <AutoComplete
@@ -238,8 +238,8 @@ export function SortableSectionCard({
       <Card
         className={`flex-1 overflow-hidden rounded-xl border transition-all duration-300 ${
           isOpen
-            ? "border-slate-900 shadow-sm ring-2 ring-slate-100"
-            : "border-slate-200 bg-white hover:border-slate-300"
+            ? "border-slate-200 shadow-sm ring-1 ring-slate-100"
+            : "border-slate-100 bg-white hover:border-slate-200"
         }`}
         styles={{ body: { padding: 0 } }}
       >
@@ -250,7 +250,7 @@ export function SortableSectionCard({
           <div className="flex flex-col gap-1 pr-4 flex-1">
              <div className="flex items-center gap-3">
                 <div className={`flex h-8 w-8 items-center justify-center rounded-md border text-sm transition-colors ${
-                  isOpen ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-slate-50 text-slate-500"
+                  isOpen ? "border-slate-900 bg-slate-900 text-white" : "border-slate-100 bg-slate-50 text-slate-500"
                 }`}>
                   {icon}
                 </div>

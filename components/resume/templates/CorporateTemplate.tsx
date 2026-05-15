@@ -1,5 +1,5 @@
 import React from "react";
-import { DescriptionList, SkillTag } from "../shared";
+import { DescriptionList, RichTextBlock, SkillTag } from "../shared";
 import type { ResumeData } from "@/lib/resume-types";
 
 type Props = {
@@ -38,7 +38,7 @@ export function CorporateTemplate({ data }: Props) {
   const summaryEl = summary ? (
     <section className="mb-8">
       <SectionHeading>Profile</SectionHeading>
-      <p className="m-0 text-slate-600 text-[12px] leading-[1.7] text-justify">{summary}</p>
+      <RichTextBlock value={summary} className="m-0 text-slate-600 text-[12px] leading-[1.7] text-justify" />
     </section>
   ) : null;
 
@@ -87,11 +87,7 @@ export function CorporateTemplate({ data }: Props) {
                 </span>
               )}
             </div>
-            {item.description && (
-              <p className="m-0 mt-1.5 text-[11.5px] text-slate-600 leading-relaxed">
-                {item.description}
-              </p>
-            )}
+            <RichTextBlock value={item.description} className="m-0 mt-1.5 text-[11.5px] text-slate-600 leading-relaxed" />
           </div>
         ))}
       </div>
@@ -131,11 +127,7 @@ export function CorporateTemplate({ data }: Props) {
             <p className="m-0 text-[10px] text-slate-400 font-semibold mt-1">
               {[item.startDate, item.endDate].filter(Boolean).join(" – ")}
             </p>
-            {item.description && (
-              <p className="m-0 mt-1.5 text-[11px] text-slate-500 leading-normal">
-                {item.description}
-              </p>
-            )}
+            <RichTextBlock value={item.description} className="m-0 mt-1.5 text-[11px] text-slate-500 leading-normal" />
           </div>
         ))}
       </div>

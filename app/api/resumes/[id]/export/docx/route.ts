@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { ResumeData } from "@/lib/resume-types";
 import { getResumeWithAccess } from "@/lib/resume-access";
+import { stripRichText } from "@/lib/rich-text";
 
 function documentXml(data: ResumeData) {
   const escapeXml = (value = "") =>
@@ -18,13 +19,13 @@ function documentXml(data: ResumeData) {
     ${paragraph(data.personal.headline)}
     ${paragraph([data.personal.email, data.personal.phone, data.personal.location, data.personal.website].filter(Boolean).join(" | "))}
     ${paragraph("Summary")}
-    ${paragraph(data.summary)}
+    ${paragraph(stripRichText(data.summary))}
     ${paragraph("Experience")}
-    ${data.experience.map((item) => paragraph(`${item.role} - ${item.company} (${item.startDate} - ${item.endDate})\n${item.description}`)).join("")}
+    ${data.experience.map((item) => paragraph(`${item.role} - ${item.company} (${item.startDate} - ${item.endDate})\n${stripRichText(item.description)}`)).join("")}
     ${paragraph("Education")}
-    ${data.education.map((item) => paragraph(`${item.degree} - ${item.school} (${item.startDate} - ${item.endDate})\n${item.description}`)).join("")}
+    ${data.education.map((item) => paragraph(`${item.degree} - ${item.school} (${item.startDate} - ${item.endDate})\n${stripRichText(item.description)}`)).join("")}
     ${paragraph("Projects")}
-    ${data.projects.map((item) => paragraph(`${item.name} ${item.link}\n${item.description}`)).join("")}
+    ${data.projects.map((item) => paragraph(`${item.name} ${item.link}\n${stripRichText(item.description)}`)).join("")}
     ${paragraph(`Skills: ${data.skills.join(", ")}`)}
     ${paragraph(`Languages: ${data.languages.join(", ")}`)}
     ${paragraph(`Certifications: ${data.certifications.map((item) => `${item.name} - ${item.issuer} ${item.date}`).join(", ")}`)}
