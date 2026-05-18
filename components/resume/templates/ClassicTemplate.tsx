@@ -66,14 +66,16 @@ export function ClassicTemplate({ data }: Props) {
     personal.website ? { label: "Web", value: personal.website, icon: "🔗" } : null,
   ].filter((item): item is { label: string; value: string; icon: string } => !!item);
 
-  const sectionsOrder = data.sectionsOrder || [
-    "personal",
-    "summary",
-    "experience",
-    "education",
-    "skills-languages",
-    "extras",
-  ];
+  const sectionsOrder = Array.isArray(data.sectionsOrder) && data.sectionsOrder.length > 0
+    ? data.sectionsOrder
+    : [
+        "personal",
+        "summary",
+        "experience",
+        "education",
+        "skills-languages",
+        "extras",
+      ];
 
   return (
     <div className="flex flex-1 min-h-full flex-col bg-white px-[60px] py-[60px] font-serif text-slate-800 antialiased selection:bg-slate-100">

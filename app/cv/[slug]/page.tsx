@@ -93,7 +93,7 @@ export default async function PublicCvPage({ params }: PublicCvPageProps) {
           }),
         }}
       />
-      <main className="mx-auto min-h-screen max-w-5xl bg-slate-100 p-6">
+      <main className="mx-auto min-h-screen max-w-5xl bg-slate-100 p-6 public-cv">
         <ResumeTemplate data={resume.dataJson as ResumeData} template={resume.template as TemplateId} />
       </main>
     </>

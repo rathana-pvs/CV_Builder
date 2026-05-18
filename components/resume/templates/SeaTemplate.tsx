@@ -39,7 +39,7 @@ export function SeaTemplate({ data }: Props) {
     data.personal.website,
   ].filter(Boolean);
 
-  const finalOrder = data.sectionsOrder && data.sectionsOrder.length > 0
+  const finalOrder = Array.isArray(data.sectionsOrder) && data.sectionsOrder.length > 0
     ? data.sectionsOrder
     : ["personal", "summary", "experience", "education", "skills-languages", "extras"];
 
@@ -181,8 +181,10 @@ export function SeaTemplate({ data }: Props) {
       <aside
         className="w-[205px] flex-shrink-0 px-5 py-9 flex flex-col"
         style={{
-          background:
+          backgroundImage:
             "linear-gradient(160deg, var(--resume-accent, #0d9488) 0%, color-mix(in srgb, var(--resume-accent, #0d9488) 70%, #000) 100%)",
+          backgroundSize: "100% 1123px",
+          backgroundRepeat: "repeat-y",
         }}
       >
         <div className="mb-6 flex flex-col items-center text-center">

@@ -90,7 +90,7 @@ export function CreativeTemplate({ data }: Props) {
   const { personal, summary, skills, languages, experience, education, projects, certifications } =
     data;
 
-  const finalOrder = data.sectionsOrder && data.sectionsOrder.length > 0
+  const finalOrder = Array.isArray(data.sectionsOrder) && data.sectionsOrder.length > 0
     ? data.sectionsOrder
     : ["personal", "summary", "experience", "education", "skills-languages", "extras"];
 

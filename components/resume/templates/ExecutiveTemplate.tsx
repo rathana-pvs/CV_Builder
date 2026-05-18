@@ -41,20 +41,22 @@ export function ExecutiveTemplate({ data }: Props) {
     { label: "Website", value: data.personal.website, icon: "🌐" },
   ].filter((item) => item.value);
 
-  const sectionsOrder = data.sectionsOrder || [
-    "personal",
-    "summary",
-    "experience",
-    "education",
-    "skills-languages",
-    "extras",
-  ];
+  const sectionsOrder = Array.isArray(data.sectionsOrder) && data.sectionsOrder.length > 0
+    ? data.sectionsOrder
+    : [
+        "personal",
+        "summary",
+        "experience",
+        "education",
+        "skills-languages",
+        "extras",
+      ];
 
   return (
-    <div className="flex flex-1 min-h-full bg-white font-sans text-slate-700 selection:bg-slate-200">
+    <div className="flex min-h-full bg-white font-sans text-slate-700 selection:bg-slate-200" style={{ alignItems: "stretch" }}>
       {/* Sidebar: Elegant Deep Accent Background */}
       <aside
-        className="w-[260px] flex-shrink-0 px-7 py-10 text-white"
+        className="w-[260px] flex-shrink-0 self-stretch px-7 py-10 text-white"
         style={{ backgroundColor: "var(--resume-accent, #0f172a)" }}
       >
         <div className="mb-10 text-center md:text-left">

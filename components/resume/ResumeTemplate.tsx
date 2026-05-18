@@ -4,9 +4,10 @@ import { TEMPLATES } from "./TemplateRegistry";
 type Props = {
   data: ResumeData;
   template: TemplateId;
+  noShadow?: boolean;
 };
 
-export function ResumeTemplate({ data, template }: Props) {
+export function ResumeTemplate({ data, template, noShadow }: Props) {
   const activeTemplate = TEMPLATES[template] || TEMPLATES.modern;
   const SelectedTemplate = activeTemplate.component;
 
@@ -27,7 +28,7 @@ export function ResumeTemplate({ data, template }: Props) {
 
   return (
     <article
-      className={`resume-page template-${template} bg-white text-slate-800 shadow-2xl`}
+      className={`resume-page template-${template} bg-white text-slate-800 ${noShadow ? "" : "shadow-2xl"}`}
       style={style}
     >
       <SelectedTemplate data={sanitizedData} />

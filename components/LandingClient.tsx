@@ -22,26 +22,12 @@ import type { TemplateId } from "@/lib/resume-types";
 import { sampleResumeData } from "@/lib/sample-resume";
 import { LinkedInImportModal } from "@/components/import/LinkedInImportModal";
 import { BrandLogo } from "@/components/brand/LogoMark";
+import { TemplateThumbnail } from "@/components/resume/TemplateThumbnail";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { ContactSection } from "@/components/landing/ContactSection";
 
-const templateDescriptions: Record<TemplateId, string> = {
-  modern: "Balanced spacing and strong section hierarchy for most applications.",
-  minimal: "Quiet typography with generous whitespace for focused reading.",
-  corporate: "Formal structure tuned for management and business roles.",
-  sea: "A refined two-column layout with regional profile emphasis.",
-  creative: "A timeline-led layout for portfolio and creative positions.",
-  classic: "A polished A4 profile layout based on the uploaded reference design.",
-  executive: "A navy two-column profile with sidebar details and timeline sections.",
-};
-
-const templateBadges: Record<TemplateId, string> = {
-  modern: "Popular",
-  minimal: "Clean",
-  corporate: "Formal",
-  sea: "SEA",
-  creative: "Portfolio",
-  classic: "New",
-  executive: "Blue",
-};
+// Centralized metadata used from TemplateRegistry
 
 export function LandingClient() {
   const router = useRouter();
@@ -178,40 +164,7 @@ export function LandingClient() {
         </div>
       ) : null}
 
-      <nav className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <button
-            type="button"
-            className="flex items-center gap-3 text-left"
-            disabled={Boolean(loadingTemplate)}
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          >
-            <BrandLogo
-              markClassName="h-9 w-9 drop-shadow-sm"
-              subtitle="Professional resume studio"
-              title="ResumeDot"
-            />
-          </button>
-          <div className="flex items-center gap-2">
-            <Button
-              type="text"
-              className="font-semibold text-slate-600"
-              disabled={Boolean(loadingTemplate)}
-              onClick={() => router.push("/login")}
-            >
-              Sign in
-            </Button>
-            <Button
-              type="primary"
-              className="rounded-lg border-none bg-slate-950 px-4 font-bold shadow-sm hover:!bg-slate-800"
-              disabled={Boolean(loadingTemplate)}
-              onClick={() => router.push("/login")}
-            >
-              Dashboard
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navbar disabled={Boolean(loadingTemplate)} />
 
       <main>
         <section className="border-b border-slate-200 bg-white">
@@ -375,14 +328,14 @@ export function LandingClient() {
                     </Button>
                   </div>
                   
-                  <div className="absolute right-4 top-4 z-[1] rounded bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-500 shadow-sm ring-1 ring-slate-200">
-                    {templateBadges[template.id]}
-                  </div>
+                  {template.tag && (
+                    <div className="absolute right-4 top-4 z-[1] rounded bg-white px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-500 shadow-sm ring-1 ring-slate-200">
+                      {template.tag}
+                    </div>
+                  )}
 
                   <div className="relative h-full w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-transform duration-500 group-hover:scale-[1.02]">
-                    <div className="pointer-events-none absolute left-1/2 top-3 w-[900px] origin-top -translate-x-1/2 scale-[0.24] md:scale-[0.27] lg:scale-[0.24] xl:scale-[0.27]">
-                      <ResumeTemplate data={sampleResumeData} template={template.id} />
-                    </div>
+                    <TemplateThumbnail data={sampleResumeData} template={template.id} />
                   </div>
                 </div>
                 
@@ -392,7 +345,7 @@ export function LandingClient() {
                       <h3 className="m-0 text-lg font-black text-slate-900">{template.name}</h3>
                       <div className="h-3 w-3 rounded-full" style={{ backgroundColor: template.accentColor }} />
                     </div>
-                    <p className="mb-5 mt-0 text-sm leading-6 text-slate-600">{templateDescriptions[template.id]}</p>
+                    <p className="mb-5 mt-0 text-sm leading-6 text-slate-600">{template.description}</p>
                   </div>
                   <Button 
                     block
@@ -440,7 +393,11 @@ export function LandingClient() {
             </div>
           </div>
         </section>
+
+        <ContactSection />
       </main>
+
+      <Footer />
     </div>
   );
 }

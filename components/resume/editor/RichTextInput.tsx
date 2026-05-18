@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Tooltip } from "antd";
 import {
   BoldOutlined,
@@ -28,15 +28,24 @@ export function RichTextInput({ value = "", onChange, placeholder, minRows = 3 }
     if (!editor || document.activeElement === editor) return;
 
     const nextValue = value || "";
-    if (editor.innerHTML !== nextValue) editor.innerHTML = nextValue;
-    setIsEmpty(!stripRichText(nextValue));
+    if (editor.innerHTML !== nextValue) {
+      editor.innerHTML = nextValue;
+    }
+    
+    const empty = !stripRichText(nextValue);
+    setIsEmpty((prev) => (prev !== empty ? empty : prev));
   }, [value]);
 
-  const emitChange = () => {
+  const emitChange = useCallback(() => {
     const nextValue = editorRef.current?.innerHTML || "";
-    setIsEmpty(!stripRichText(nextValue));
-    onChange?.(nextValue);
-  };
+    
+    const empty = !stripRichText(nextValue);
+    setIsEmpty((prev) => (prev !== empty ? empty : prev));
+    
+    if (nextValue !== value) {
+      onChange?.(nextValue);
+    }
+  }, [value, onChange]);
 
   const selectionIsInsideEditor = () => {
     const editor = editorRef.current;

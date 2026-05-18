@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Checkbox, Col, Form, Input, Modal, Radio, Row, Segmented, Select, Space, Tabs, Typography, message } from "antd";
 import {
   DownloadOutlined,
@@ -63,10 +63,13 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportFileName, setExportFileName] = useState("");
+  const [exportFormat, setExportFormat] = useState<"pdf" | "docx">("pdf");
   const [isDownloading, setIsDownloading] = useState(false);
   const [authUpsellOpen, setAuthUpsellOpen] = useState(false);
   const [authUpsellMode, setAuthUpsellMode] = useState<'soft' | 'hard'>('soft');
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const [editorWidth, setEditorWidth] = useState(50);
+  const [isResizingPanels, setIsResizingPanels] = useState(false);
 
   // New: Premium exit warning state
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
@@ -76,6 +79,30 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     );
   };
+
+  useEffect(() => {
+    if (!isResizingPanels) return;
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const width = window.innerWidth;
+      const nextWidth = Math.min(68, Math.max(32, (event.clientX / width) * 100));
+      setEditorWidth(nextWidth);
+    };
+
+    const handlePointerUp = () => setIsResizingPanels(false);
+
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+
+    return () => {
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [isResizingPanels]);
 
   const [sectionsOrder, setSectionsOrder] = useState<string[]>([
     "personal",
@@ -100,7 +127,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
         const newIdx = items.indexOf(over.id as string);
         const nextOrder = arrayMove(items, oldIdx, newIdx);
         setTimeout(() => {
-          syncPreview(nextOrder);
+          syncPreviewNow(nextOrder);
           setIsDirty(true);
         }, 0);
         return nextOrder;
@@ -112,7 +139,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
     if (isInitialized.current) return;
     isInitialized.current = true;
 
-    if (resume.dataJson.sectionsOrder && resume.dataJson.sectionsOrder.length > 0) {
+    if (Array.isArray(resume.dataJson.sectionsOrder) && resume.dataJson.sectionsOrder.length > 0) {
       setSectionsOrder(resume.dataJson.sectionsOrder);
     }
 
@@ -161,7 +188,15 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
       ? "bg-rose-50 text-rose-700"
       : "bg-emerald-50 text-emerald-700";
 
-  function syncPreview(overrideSections?: string[]) {
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync preview immediately (clears debounce timer)
+  const syncPreviewNow = useCallback((overrideSections?: string[]) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+
     const allValues = form.getFieldsValue(true);
     const nextData: ResumeData = {
       personal: {
@@ -197,15 +232,66 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
       isPublic: Boolean(allValues.isPublic),
     });
     setIsDirty(true);
-  }
+  }, [form, sectionsOrder, setData, setMeta]);
+
+  // Debounced preview sync (useful for high-frequency typing)
+  const syncPreviewDebounced = useCallback((overrideSections?: string[]) => {
+    setIsDirty(true);
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      syncPreviewNow(overrideSections);
+    }, 400);
+  }, [syncPreviewNow]);
+
+  // Handle automatic routing of immediate vs debounced form changes
+  const handleFormValuesChange = useCallback((changedValues: any) => {
+    const immediateFields = ["color", "template", "skillLevelStyle", "isPublic"];
+    const changedKeys = Object.keys(changedValues);
+    const isImmediate = changedKeys.every(key => immediateFields.includes(key));
+
+    if (isImmediate) {
+      syncPreviewNow();
+    } else {
+      syncPreviewDebounced();
+    }
+  }, [syncPreviewNow, syncPreviewDebounced]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   async function save() {
+    // Force sync any pending changes immediately before saving to database
+    syncPreviewNow();
+
+    const currentState = useResumeStore.getState();
+    const currentTitle = currentState.title;
+    const currentSlug = currentState.slug;
+    const currentTemplate = currentState.template;
+    const currentIsPublic = currentState.isPublic;
+    const currentData = currentState.data;
+
     setSaving(true);
     try {
       const response = await fetch(`/api/resumes/${resume.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, slug, template, isPublic, dataJson: data }),
+        body: JSON.stringify({
+          title: currentTitle,
+          slug: currentSlug,
+          template: currentTemplate,
+          isPublic: currentIsPublic,
+          dataJson: currentData,
+        }),
       });
 
       if (!response.ok) {
@@ -235,8 +321,12 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
   }
 
   function handlePrepareDownload() {
+    // Force sync pending changes so the download dialog has absolute latest title
+    syncPreviewNow();
+
     const proceed = () => {
-      setExportFileName(title || "My_Resume");
+      const currentTitle = useResumeStore.getState().title;
+      setExportFileName(currentTitle || "My_Resume");
       setExportModalOpen(true);
     };
 
@@ -263,19 +353,25 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
     try {
       // 1. Sync the confirmed file name to the state and form
       const cleanedName = exportFileName.trim() || "My_Resume";
-      setMeta({ title: cleanedName });
       form.setFieldValue("title", cleanedName);
+      syncPreviewNow();
 
-      // 2. Fire off an auto-save to ensure latest data persists before Puppeteer renders PDF
+      const currentState = useResumeStore.getState();
+      const currentSlug = currentState.slug;
+      const currentTemplate = currentState.template;
+      const currentIsPublic = currentState.isPublic;
+      const currentData = currentState.data;
+
+      // 2. Fire off an auto-save to ensure latest data persists before generating export
       const saveResponse = await fetch(`/api/resumes/${resume.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: cleanedName,
-          slug,
-          template,
-          isPublic,
-          dataJson: data
+          slug: currentSlug,
+          template: currentTemplate,
+          isPublic: currentIsPublic,
+          dataJson: currentData
         }),
       });
 
@@ -288,9 +384,11 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
 
       // 3. Redirect/Trigger download with clean safe slug name for the query param
       const safeName = cleanedName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const downloadUrl = `/api/resumes/${resume.id}/export/pdf?template=${template}${
-        data.color ? `&accent=${encodeURIComponent(data.color)}` : ""
-      }&filename=${encodeURIComponent(safeName)}`;
+      const downloadUrl = exportFormat === "docx"
+        ? `/api/resumes/${resume.id}/export/docx?filename=${encodeURIComponent(safeName)}`
+        : `/api/resumes/${resume.id}/export/pdf?template=${currentTemplate}${
+            currentData.color ? `&accent=${encodeURIComponent(currentData.color)}` : ""
+          }&filename=${encodeURIComponent(safeName)}`;
 
       setExportModalOpen(false);
       window.location.href = downloadUrl;
@@ -366,7 +464,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
             onClick={handlePrepareDownload}
             className="flex h-10 items-center rounded-md border-slate-200 px-4 text-xs font-semibold text-slate-700 shadow-none hover:border-slate-300 hover:text-slate-900"
           >
-            Export PDF
+            Export
           </Button>
           {isPublic ? (
             <Button
@@ -424,7 +522,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
                               onClick={() => {
                                 setTimeout(() => {
                                   form.setFieldValue("image", undefined);
-                                  syncPreview();
+                                  syncPreviewNow();
                                 }, 0);
                               }}
                               className="absolute inset-0 bg-black/50 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity font-bold"
@@ -453,7 +551,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
                                 reader.onloadend = () => {
                                   setTimeout(() => {
                                     form.setFieldValue("image", reader.result);
-                                    syncPreview();
+                                    syncPreviewNow();
                                   }, 0);
                                 };
                                 reader.readAsDataURL(file);
@@ -622,7 +720,12 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
         };
 
         return (
-          <div className="grid h-[calc(100vh-64px)] flex-1 grid-cols-2 overflow-hidden max-xl:grid-cols-1">
+          <div
+            className="relative grid h-[calc(100vh-64px)] flex-1 overflow-hidden max-xl:!grid-cols-1"
+            style={{
+              gridTemplateColumns: `minmax(360px, ${editorWidth}%) 8px minmax(420px, 1fr)`,
+            }}
+          >
             <div className="flex h-full flex-col overflow-hidden border-r border-slate-200 bg-slate-50/70">
               <div className="border-b border-slate-200 bg-white px-5 py-4">
                 <div className="mb-4">
@@ -650,8 +753,8 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
               </div>
               </div>
 
-              <Form form={form} layout="vertical" onValuesChange={syncPreview} className="flex-1 overflow-hidden flex flex-col">
-                <div className="flex-1 overflow-y-auto p-4 md:p-5">
+              <Form form={form} layout="vertical" onValuesChange={handleFormValuesChange} className="flex-1 overflow-hidden flex flex-col">
+                <div className="no-scrollbar flex-1 overflow-y-auto p-4 md:p-5">
                   {activeTab === 'text' && (
                     <TextTab
                       sectionsOrder={sectionsOrder}
@@ -672,11 +775,29 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
               </Form>
             </div>
 
+            <button
+              type="button"
+              aria-label="Resize editor and preview panels"
+              onPointerDown={(event) => {
+                event.preventDefault();
+                setIsResizingPanels(true);
+              }}
+              className={`group flex h-full cursor-col-resize items-center justify-center bg-slate-100 transition-colors hover:bg-blue-50 max-xl:hidden ${
+                isResizingPanels ? "bg-blue-50" : ""
+              }`}
+            >
+              <span
+                className={`h-12 w-1 rounded-full transition-colors ${
+                  isResizingPanels ? "bg-blue-500" : "bg-slate-300 group-hover:bg-blue-400"
+                }`}
+              />
+            </button>
+
             <PreviewPanel
               previewData={previewData}
               template={template}
               form={form}
-              syncPreview={syncPreview}
+              syncPreview={syncPreviewNow}
             />
           </div>
         );
@@ -710,7 +831,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
             icon={<DownloadOutlined />}
             className="bg-blue-600 hover:bg-blue-700 font-bold text-xs rounded-lg h-10 px-5 border-none shadow-md shadow-blue-500/20"
           >
-            Confirm & Save PDF
+            Confirm & Save {exportFormat === "docx" ? "DOCX" : "PDF"}
           </Button>,
         ]}
         centered
@@ -718,9 +839,25 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
       >
         <div className="py-3">
           <Typography.Text className="text-xs text-slate-500 leading-relaxed font-medium block mb-4 bg-blue-50/40 p-3 rounded-xl border border-blue-50">
-            We automatically save your latest changes before generating the PDF to ensure the export has the absolutely freshest version of your work.
+            We automatically save your latest changes before generating the {exportFormat === "docx" ? "DOCX" : "PDF"} to ensure the export has the absolutely freshest version of your work.
           </Typography.Text>
           
+          <div className="mb-4">
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2 pl-1">
+              Select Export Format
+            </label>
+            <Segmented
+              block
+              value={exportFormat}
+              onChange={(value) => setExportFormat(value as "pdf" | "docx")}
+              className="w-full bg-slate-100 p-1 rounded-xl text-slate-600 font-bold text-xs"
+              options={[
+                { label: "PDF Document (.pdf)", value: "pdf" },
+                { label: "Word Document (.docx)", value: "docx", disabled: true }
+              ]}
+            />
+          </div>
+
           <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2 pl-1">
             Resume Export Name
           </label>
@@ -731,7 +868,7 @@ export function ResumeEditor({ resume, isLoggedIn = false }: Props) {
             placeholder="e.g. My Professional CV"
             className="rounded-xl h-12 font-semibold text-slate-800 border-slate-200 focus:border-blue-400 shadow-sm"
             onPressEnter={handleConfirmDownload}
-            suffix={<span className="text-slate-400 text-[13px] font-black bg-slate-50 px-2 py-1 rounded-md">.pdf</span>}
+            suffix={<span className="text-slate-400 text-[13px] font-black bg-slate-50 px-2 py-1 rounded-md">.{exportFormat}</span>}
           />
         </div>
       </Modal>

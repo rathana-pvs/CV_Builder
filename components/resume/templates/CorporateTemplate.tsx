@@ -31,7 +31,7 @@ export function CorporateTemplate({ data }: Props) {
     personal.website && { icon: "⊕", label: personal.website },
   ].filter((c): c is { icon: string; label: string } => !!c);
 
-  const finalOrder = data.sectionsOrder && data.sectionsOrder.length > 0
+  const finalOrder = Array.isArray(data.sectionsOrder) && data.sectionsOrder.length > 0
     ? data.sectionsOrder
     : ["personal", "summary", "experience", "education", "skills-languages", "extras"];
 

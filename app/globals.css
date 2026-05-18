@@ -45,6 +45,12 @@ body {
   flex-direction: column;
 }
 
+.public-cv .resume-page {
+  height: auto !important;
+  min-height: 1120px !important;
+  overflow: visible !important;
+}
+
 .template-sea {
   --resume-accent: #0f766e;
 }
