@@ -1143,18 +1143,20 @@ function documentXml(data: ResumeData, templateId = "modern") {
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return NextResponse.json(
-    { error: "DOCX export is temporarily disabled. Please use PDF export." },
-    { status: 503 }
-  );
-
   const { id } = await params;
   const resume = await getResumeWithAccess(id);
   if (!resume) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  if (true) {
+    return NextResponse.json(
+      { error: "DOCX export is temporarily disabled. Please use PDF export." },
+      { status: 503 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const queryFilename = searchParams.get("filename");
-  const finalFilenameBase = queryFilename?.trim() || resume.slug;
+  const finalFilenameBase = queryFilename?.trim() || resume!.slug;
   const finalFilename = `${finalFilenameBase.replace(/[^a-zA-Z0-9._-]/g, "_")}.docx`;
 
   const PizZip = (await import("pizzip")).default;
@@ -1163,8 +1165,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`);
   zip.folder("_rels")?.file(".rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
   
-  const storedTemplate = resume.template || "modern";
-  zip.folder("word")?.file("document.xml", documentXml(resume.dataJson as ResumeData, storedTemplate));
+  const storedTemplate = resume!.template || "modern";
+  zip.folder("word")?.file("document.xml", documentXml(resume!.dataJson as ResumeData, storedTemplate));
 
   const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
   doc.render({});

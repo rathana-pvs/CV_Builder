@@ -68,6 +68,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       });
     } else {
       const puppeteer = await import("puppeteer-core");
+      // @ts-ignore: @sparticuz/chromium lacks type definitions
       const chromium = (await import("@sparticuz/chromium")).default;
       browser = await puppeteer.launch({
         args: [...(chromium as any).args, "--no-sandbox", "--disable-setuid-sandbox"],
