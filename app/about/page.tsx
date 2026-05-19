@@ -12,6 +12,19 @@ import {
 export const metadata: Metadata = {
   title: `About Us | ${siteName}`,
   description: `Learn more about ${siteName} and our mission to simplify the professional resume building process.`,
+  alternates: {
+    canonical: "/about",
+  },
+  openGraph: {
+    title: `About Us | ${siteName}`,
+    description: `Learn more about ${siteName} and our mission to simplify the professional resume building process.`,
+    url: "/about",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `About Us | ${siteName}`,
+    description: `Learn more about ${siteName} and our mission to simplify the professional resume building process.`,
+  },
 };
 
 export default function AboutPage() {

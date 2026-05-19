@@ -1,7 +1,9 @@
 import "@ant-design/v5-patch-for-react-19";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { defaultSeoDescription, getSiteOrigin, getSiteUrl, siteDomain, siteName } from "@/lib/seo";
 import "./globals.css";
 
@@ -64,6 +66,22 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  icons: {
+    icon: [
+      {
+        url: "/icon.svg",
+        type: "image/svg+xml",
+        sizes: "any",
+      },
+    ],
+    shortcut: ["/icon.svg"],
+    apple: [
+      {
+        url: "/icon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+  },
   category: "technology",
   other: {
     "og:domain": siteDomain,
@@ -74,6 +92,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="en">
       <body>
+        <Suspense fallback={null}>
+          <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        </Suspense>
         <AntdRegistry>{children}</AntdRegistry>
       </body>
     </html>

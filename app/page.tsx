@@ -43,6 +43,7 @@ export default async function HomePage() {
         "@id": `${getSiteUrl()}/#organization`,
         name: siteName,
         url: getSiteUrl(),
+        logo: `${getSiteUrl()}/icon.svg`,
       },
       {
         "@type": "SoftwareApplication",
